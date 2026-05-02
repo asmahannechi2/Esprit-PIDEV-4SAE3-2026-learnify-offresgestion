@@ -17,6 +17,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('integrated/job-service') {
+                    sh 'chmod +x mvnw'
                     sh './mvnw test'
                 }
             }
@@ -25,7 +26,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('integrated/job-service') {
-                    sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL}"
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
         }
@@ -33,6 +36,7 @@ pipeline {
         stage('Build Artifact') {
             steps {
                 dir('integrated/job-service') {
+                    sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
             }

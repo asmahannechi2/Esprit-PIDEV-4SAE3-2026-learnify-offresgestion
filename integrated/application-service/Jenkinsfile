@@ -18,6 +18,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('integrated/application-service') {
+                    sh 'chmod +x mvnw'
                     sh './mvnw test'
                 }
             }
@@ -26,9 +27,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('integrated/application-service') {
-                    // Utilise le token SonarQube configuré dans Jenkins ou passé en paramètre
-                    // sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
-                    sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL}"
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
         }
@@ -36,6 +37,7 @@ pipeline {
         stage('Build Artifact') {
             steps {
                 dir('integrated/application-service') {
+                    sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
             }
