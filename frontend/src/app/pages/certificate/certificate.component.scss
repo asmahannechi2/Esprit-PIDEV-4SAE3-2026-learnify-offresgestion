@@ -1,0 +1,97 @@
+.cert-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  padding: 60px 0 50px;
+}
+
+.cert-card {
+  border-radius: 20px !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  &:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.12) !important; }
+}
+
+.cert-completed { border-top: 4px solid #22c55e !important; }
+.cert-locked    { border-top: 4px solid #9ca3af !important; opacity: 0.85; }
+
+.cert-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #f3f4f6;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #9ca3af; flex-shrink: 0;
+}
+.cert-icon-done {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.verify-code-box {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #64748b;
+  code { color: #0f3460; font-weight: 600; font-size: 12px; }
+}
+
+.qr-img {
+  width: 100px; height: 100px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 4px;
+  background: white;
+}
+
+/* AI Button */
+.btn-ai {
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.9; color: white; }
+  &:disabled { opacity: 0.6; }
+}
+
+/* AI Panel */
+.ai-panel {
+  border: 1px solid #e0d7ff;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #faf8ff;
+}
+.ai-panel-header {
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.job-card {
+  padding: 12px 14px;
+  border-bottom: 1px solid #ede9ff;
+  &:last-child { border-bottom: none; }
+}
+.job-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.match-badge {
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.job-desc { font-size: 12px; color: #666; margin: 4px 0 6px; }
+.skill-tag {
+  background: #ede9ff;
+  color: #6610f2;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.salary { font-size: 12px; color: #16a34a; font-weight: 600; margin-top: 4px; }

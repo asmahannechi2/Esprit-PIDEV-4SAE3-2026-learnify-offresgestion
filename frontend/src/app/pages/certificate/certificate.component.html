@@ -1,0 +1,203 @@
+<app-navbar></app-navbar>
+
+<section class="cert-hero">
+  <div class="container text-center">
+    <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill">
+      <i class="bi bi-award-fill me-1"></i> MY CERTIFICATES
+    </span>
+    <h1 class="display-5 fw-bold mb-2">My Certificates</h1>
+    <p class="lead opacity-75 mb-4">Generate and download your course certificates</p>
+    <a routerLink="/badges" class="btn btn-outline-light btn-sm px-4">
+      <i class="bi bi-medal-fill me-1"></i> View My Badges
+    </a>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <!-- Certificate Cards -->
+    <div class="row g-4 justify-content-center mb-5">
+      @for (cert of certificates; track cert.id) {
+        <div class="col-lg-4 col-md-6">
+          <div class="card cert-card h-100 shadow-sm border-0"
+            [class.cert-completed]="cert.completed"
+            [class.cert-locked]="!cert.completed">
+            <div class="card-body p-4">
+
+              <!-- Header -->
+              <div class="d-flex align-items-center mb-3 gap-3">
+                <div class="cert-icon" [class.cert-icon-done]="cert.completed">
+                  <i class="bi" [class.bi-patch-check-fill]="cert.completed" [class.bi-lock-fill]="!cert.completed"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold mb-1">{{ cert.course }}</h5>
+                  <span class="badge" [class.bg-success]="cert.completed" [class.bg-secondary]="!cert.completed">
+                    {{ cert.completed ? 'Completed' : 'In Progress' }}
+                  </span>
+                </div>
+              </div>
+
+              @if (cert.completed) {
+                <!-- Grade -->
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-star-fill text-warning"></i>
+                  <span class="small fw-semibold">Grade: {{ cert.grade }}%</span>
+                </div>
+
+                <!-- Date -->
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-calendar-check text-muted"></i>
+                  <span class="small text-muted">Completed on {{ cert.date | date:'mediumDate' }}</span>
+                </div>
+
+                <!-- Verification Code -->
+                <div class="verify-code-box mb-3">
+                  <i class="bi bi-qr-code me-1"></i>
+                  <code>{{ cert.verificationCode }}</code>
+                </div>
+
+                <!-- QR Code -->
+                <div class="text-center mb-3">
+                  <img [src]="getQrUrl(cert.verificationCode)" alt="QR Code"
+                    class="qr-img" title="Scan to verify certificate" />
+                  <div class="small text-muted mt-1" style="font-size:11px">Scan to verify</div>
+                </div>
+
+                <!-- Success message -->
+                @if (cert.successMsg) {
+                  <div class="alert alert-success py-2 px-3 small mb-3">
+                    <i class="bi bi-check-circle me-1"></i>{{ cert.successMsg }}
+                  </div>
+                }
+                @if (cert.emailSent) {
+                  <div class="alert alert-success py-2 px-3 small mb-3">
+                    <i class="bi bi-envelope-check-fill me-1"></i>
+                    Certificate sent to <strong>tahersahbi7&#64;gmail.com</strong>!
+                  </div>
+                }
+
+                <!-- Buttons -->
+                <div class="d-flex flex-column gap-2">
+                  <button class="btn btn-primary w-100"
+                    (click)="generateCertificate(cert)"
+                    [disabled]="cert.generating">
+                    @if (cert.generating) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>Generating...
+                    } @else {
+                      <i class="bi bi-file-earmark-pdf me-1"></i>Generate Certificate
+                    }
+                  </button>
+                  <button class="btn btn-outline-danger w-100"
+                    (click)="sendEmailNotification(cert)">
+                    <i class="bi bi-envelope-fill me-1"></i>Send to my Email
+                  </button>
+                  <button class="btn btn-ai w-100"
+                    (click)="getJobRecommendations(cert)">
+                    @if (cert.loadingJobs) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>Analyzing...
+                    } @else {
+                      <i class="bi bi-stars me-1"></i>
+                      {{ cert.showJobs ? 'Hide AI Recommendations' : 'AI Job Recommendations' }}
+                    }
+                  </button>
+                </div>
+
+                <!-- AI Job Recommendations Panel -->
+                @if (cert.showJobs) {
+                  <div class="ai-panel mt-3">
+                    <div class="ai-panel-header">
+                      <i class="bi bi-stars me-1"></i>
+                      AI Career Recommendations for <strong>{{ cert.course }}</strong>
+                    </div>
+                    @if (cert.loadingJobs) {
+                      <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <div class="small text-muted mt-1">AI is analyzing your certificate...</div>
+                      </div>
+                    }
+                    @for (job of cert.jobs; track job.jobTitle) {
+                      <div class="job-card">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                          <span class="job-title">{{ job.jobTitle }}</span>
+                          <span class="match-badge">{{ job.matchScore }}% match</span>
+                        </div>
+                        <p class="job-desc">{{ job.description }}</p>
+                        <div class="d-flex flex-wrap gap-1 mb-1">
+                          @for (skill of job.requiredSkills; track skill) {
+                            <span class="skill-tag">{{ skill }}</span>
+                          }
+                        </div>
+                        <div class="salary">
+                          <i class="bi bi-cash-coin me-1"></i>{{ job.salaryRange }}
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+              } @else {
+                <p class="text-muted small mt-3 mb-0">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Complete this course to unlock your certificate.
+                </p>
+                <a routerLink="/courses" class="btn btn-outline-primary btn-sm mt-3 w-100">
+                  Continue Course
+                </a>
+              }
+
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Verify Certificate Section -->
+    <div class="row justify-content-center">
+      <div class="col-md-7">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-1">
+              <i class="bi bi-patch-check-fill text-success me-2"></i>Verify a Certificate
+            </h5>
+            <p class="text-muted small mb-3">
+              Enter the verification code printed on a certificate to confirm its authenticity.
+            </p>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="e.g. CERT-2024-FR-B1-88421"
+                [(ngModel)]="verifyCode"
+                (keyup.enter)="verifyCertificate()"
+                style="text-transform:uppercase" />
+              <button class="btn btn-success px-4" (click)="verifyCertificate()">
+                <i class="bi bi-search me-1"></i> Verify
+              </button>
+            </div>
+
+            @if (verifyResult) {
+              <div class="alert alert-success mt-3 mb-0 rounded-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <i class="bi bi-check-circle-fill fs-5"></i>
+                  <strong>Valid Certificate!</strong>
+                </div>
+                <div class="small">
+                  <strong>Course:</strong> {{ verifyResult.course }}<br>
+                  <strong>Grade:</strong> {{ verifyResult.grade }}%<br>
+                  <strong>Issued:</strong> {{ verifyResult.date | date:'mediumDate' }}
+                </div>
+              </div>
+            }
+
+            @if (verifyError) {
+              <div class="alert alert-danger mt-3 mb-0 small rounded-3">
+                <i class="bi bi-x-circle me-1"></i>{{ verifyError }}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<app-footer></app-footer>

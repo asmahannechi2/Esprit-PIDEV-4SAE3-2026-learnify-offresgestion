@@ -1,0 +1,119 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 fw-bold">Badges Management</h2>
+      <p class="text-muted mb-0 small">Create and manage achievement badges for courses</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" (click)="load()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+      </button>
+      <button class="btn btn-primary" routerLink="/admin/badges/create">
+        <i class="bi bi-plus-circle me-1"></i> Create Badge
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Search by name or course..."
+              [(ngModel)]="searchTerm" (input)="applyFilters()" />
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="d-flex gap-2 flex-wrap">
+            @for (l of levels; track l) {
+              <button class="btn btn-sm"
+                [class.btn-primary]="filterLevel === l"
+                [class.btn-outline-secondary]="filterLevel !== l"
+                (click)="filterLevel = l; applyFilters()">
+                {{ l }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="col-md-2 text-end">
+          <span class="badge bg-primary rounded-pill fs-6">{{ filtered.length }} badges</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2 text-muted">Loading badges...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error) {
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</div>
+  }
+
+  <!-- Grid -->
+  @if (!isLoading && !error) {
+    @if (filtered.length === 0) {
+      <div class="text-center py-5">
+        <i class="bi bi-award text-muted" style="font-size:3rem"></i>
+        <h5 class="mt-3 text-muted">No badges found</h5>
+        <p class="text-muted">Create your first badge to get started.</p>
+        <button class="btn btn-primary" routerLink="/admin/badges/create">
+          <i class="bi bi-plus-circle me-1"></i> Create Badge
+        </button>
+      </div>
+    } @else {
+      <div class="row g-4">
+        @for (badge of filtered; track badge.id) {
+          <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 border-0 badge-card">
+              <div class="card-body p-4">
+                <!-- Badge Image -->
+                <div class="text-center mb-3">
+                  @if (badge.imageUrl) {
+                    <img [src]="badge.imageUrl" [alt]="badge.name" class="badge-img rounded-circle" />
+                  } @else {
+                    <div class="badge-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center">
+                      <i class="bi bi-award-fill text-white" style="font-size:2rem"></i>
+                    </div>
+                  }
+                </div>
+                <!-- Info -->
+                <h5 class="fw-bold text-center mb-1">{{ badge.name }}</h5>
+                <p class="text-muted small text-center mb-3">{{ badge.description }}</p>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                  <span class="badge {{ getLevelClass(badge.level) }}">{{ badge.level }}</span>
+                  <span class="badge {{ getStatusClass(badge.status) }}">{{ badge.status }}</span>
+                </div>
+                <div class="text-muted small mb-3">
+                  <div><i class="bi bi-book me-1"></i>{{ badge.courseName ?? 'Course ' + badge.courseId }}</div>
+                  <div class="mt-1"><i class="bi bi-trophy me-1"></i>{{ badge.criteria }}</div>
+                </div>
+                @if (badge.isPublishedToLinkedIn) {
+                  <div class="text-center mb-2">
+                    <span class="badge bg-info text-dark"><i class="bi bi-linkedin me-1"></i>Shared on LinkedIn</span>
+                  </div>
+                }
+              </div>
+              <div class="card-footer bg-transparent border-top-0 d-flex gap-2 px-4 pb-4">
+                <button class="btn btn-sm btn-outline-primary flex-grow-1" (click)="edit(badge)">
+                  <i class="bi bi-pencil me-1"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="delete(badge)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

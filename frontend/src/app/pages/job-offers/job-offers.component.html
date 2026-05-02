@@ -1,0 +1,227 @@
+<app-navbar></app-navbar>
+
+<section class="py-8 bg-light" (click)="showFavoritesDropdown = false">
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <a routerLink="/" class="btn-sm btn-outline-secondary btn">Back to Home</a>
+          @if (hasCv) {
+            <a routerLink="/cv" class="btn-sm btn-outline-primary btn"><i class="ti ti-edit me-1"></i>Edit Profile / CV</a>
+          } @else {
+            <a routerLink="/cv" class="btn-sm btn-outline-primary btn"><i class="ti ti-file-plus me-1"></i>Upload CV Profile</a>
+          }
+          <a routerLink="/courses" class="btn-sm btn-outline-primary btn">Go to Courses</a>
+          @if (auth.hasRole('TUTOR') || auth.hasRole('CANDIDATE')) {
+            <div class="dropdown position-relative" (click)="$event.stopPropagation()">
+              <button type="button" class="btn-sm btn-outline-warning d-inline-flex align-items-center gap-1 btn"
+                (click)="openFavoritesDropdown(); $event.stopPropagation()"
+                [attr.aria-expanded]="showFavoritesDropdown"
+                aria-haspopup="true">
+                <i class="ti ti-star-filled"></i>
+                <span>My Favorites</span>
+                @if (savedJobIds.size > 0) {
+                  <span class="badge bg-warning text-dark rounded-pill">{{ savedJobIds.size }}</span>
+                }
+              </button>
+              @if (showFavoritesDropdown) {
+                <div class="dropdown-menu show position-absolute start-0 mt-1 shadow rounded-3 p-2 favorites-dropdown">
+                  <div class="dropdown-item-text fw-semibold border-bottom pb-2 mb-2">
+                    <i class="ti ti-star me-1"></i>Saved Jobs
+                  </div>
+                  @if (loadingFavorites) {
+                    <div class="dropdown-item-text text-muted small">
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>Loading...
+                    </div>
+                  } @else if (favoriteJobs.length === 0) {
+                    <div class="dropdown-item-text text-muted small">No saved jobs yet.</div>
+                  } @else {
+                    @for (job of favoriteJobs; track job.id) {
+                      <button type="button" class="dropdown-item d-flex align-items-center gap-2 rounded-2 py-2"
+                        (click)="scrollToJob(job.id)">
+                        <i class="ti ti-briefcase text-primary"></i>
+                        <div class="text-start flex-grow-1">
+                          <span class="d-block fw-medium">{{ job.title }}</span>
+                          <span class="small text-muted">{{ job.company }} • {{ job.location }}</span>
+                        </div>
+                        <i class="ti ti-arrow-right small"></i>
+                      </button>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Case "Modifier mon CV" visible quand les offres sont classées selon le CV -->
+    @if (showingRecommended) {
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card border-primary border-2 rounded-4 shadow-sm modify-cv-box">
+            <div class="card-body py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="ti ti-sparkles fs-4 text-primary"></i>
+                <div>
+                  <strong class="d-block">AI-Driven Recommendations</strong>
+                  <span class="small text-muted">Update your profile to improve matching accuracy.</span>
+                </div>
+              </div>
+              <a routerLink="/cv" class="btn btn-primary rounded-pill">
+                <i class="ti ti-edit me-1"></i>Update Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="row mb-5 text-center">
+      <div class="col-12">
+        <h1 class="display-5 fw-bold mb-3">Teaching Opportunities</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">Find the perfect fit for your language pedagogical skills.</p>
+        @if (showingRecommended) {
+          <p class="small text-success mb-0"><i class="ti ti-circle-check-filled me-1"></i>Ranked by ATS relevance for your profile</p>
+        }
+      </div>
+    </div>
+
+    @if (loadError) {
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="alert alert-warning mb-0" role="alert">
+            <i class="ti ti-info-circle me-2"></i>{{ loadError }}
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="row g-4 justify-content-center">
+      @for (job of jobOffers; track job.id) {
+        <div class="col-xl-6 col-lg-8" [id]="'job-' + job.id">
+          <div class="card shadow-sm h-100 rounded-4 card-hover overflow-hidden">
+            <div class="card-body p-4 position-relative">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="pe-4">
+                  <h5 class="card-title fw-bold mb-1">{{ job.title }}</h5>
+                  <p class="text-muted small mb-0"><i class="ti ti-building me-1"></i>{{ job.company }} • <i class="ti ti-map-pin me-1"></i>{{ job.location }}</p>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-1">
+                  @if (auth.hasRole('TUTOR') || auth.hasRole('CANDIDATE')) {
+                    <button type="button" class="btn-favorite"
+                      [class.saved]="isSaved(job.id)"
+                      [disabled]="savingFavoriteId === job.id"
+                      (click)="toggleFavorite(job)"
+                      [title]="isSaved(job.id) ? 'Remove' : 'Save'">
+                      @if (savingFavoriteId === job.id) {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                      } @else {
+                        <i class="ti" [class.ti-star-filled]="isSaved(job.id)" [class.ti-star]="!isSaved(job.id)"></i>
+                      }
+                    </button>
+                  }
+                  @if (job.matchScore != null) {
+                    <span class="badge bg-success rounded-pill" title="ATS relevance score">{{ job.matchScore }}% match</span>
+                  }
+                  <span class="badge bg-primary rounded-pill">{{ job.requiredLevel }}</span>
+                </div>
+              </div>
+              <p class="card-text text-muted small mb-4 line-clamp-3">{{ job.description }}</p>
+              
+              <div class="d-flex align-items-center justify-content-between mt-auto">
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="badge bg-light text-dark fw-normal border">{{ job.type }}</span>
+                  <span class="small text-muted"><i class="ti ti-clock me-1"></i>{{ job.postedDate }}</span>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-primary px-3 rounded-pill" (click)="viewJob(job)">Details</button>
+                  @if (auth.hasRole('TUTOR') || auth.hasRole('CANDIDATE')) {
+                    @if (hasApplied(job.id)) {
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-success px-3 rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                          Applied
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                          <li><button class="dropdown-item" (click)="openApplicationModal(job)"><i class="ti ti-edit me-2"></i>Update</button></li>
+                          <li><button class="dropdown-item text-danger" (click)="confirmDeleteApplication(job.id)"><i class="ti ti-trash me-2"></i>Withdraw</button></li>
+                        </ul>
+                      </div>
+                    } @else {
+                      <button class="btn btn-sm btn-primary px-4 rounded-pill shadow-sm" (click)="openApplicationModal(job)">Apply Now</button>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Application Modal -->
+@if (showApplicationModal && selectedJob) {
+  <div class="application-modal-backdrop" (click)="closeApplicationModal()">
+    <div class="application-modal" (click)="$event.stopPropagation()">
+      <div class="modal-decoration"></div>
+      <div class="application-modal-header p-4">
+        <h4 class="mb-1 fw-bold">{{ isEditingApplication ? 'Update candidacy' : 'New Application' }}</h4>
+        <p class="small text-muted mb-0">{{ selectedJob.company }} • {{ selectedJob.title }}</p>
+      </div>
+      <div class="application-modal-body px-4 pb-2">
+        <p class="small text-muted mb-3">
+          {{ isEditingApplication ? 'Update your motivation letter and optional documents.' : 'Tell us why you are a great fit for this position. Our ATS will analyze your profile and motivation.' }}
+        </p>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Motivation Letter *</label>
+          <textarea
+            class="form-control"
+            rows="5"
+            [value]="applicationMotivation"
+            (input)="onMotivationInput($event)"
+            placeholder="Briefly describe your experience and motivation (required)..."
+          ></textarea>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="file-upload-wrapper">
+              <label class="form-label fw-semibold small">Resume / CV (Optional override)</label>
+              <input type="file" class="form-control form-control-sm" accept=".pdf,.doc,.docx"
+                (change)="onCvSelected($event)">
+              <div class="small text-muted mt-1" style="font-size: 0.7rem;">Leave empty to use your default profile CV.</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="file-upload-wrapper">
+              <label class="form-label fw-semibold small">Certificate (Optional)</label>
+              <input type="file" class="form-control form-control-sm" accept=".pdf,.jpg,.png"
+                (change)="onCertSelected($event)">
+            </div>
+          </div>
+        </div>
+        @if (applicationError) {
+          <div class="alert alert-danger py-2 px-3 mt-3 small mb-0">
+            <i class="ti ti-exclamation-circle me-1"></i>{{ applicationError }}
+          </div>
+        }
+      </div>
+      <div class="application-modal-footer p-4 border-0 d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" (click)="closeApplicationModal()" [disabled]="applying">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary w-100 rounded-pill shadow-sm" (click)="submitApplication()" [disabled]="applying">
+          @if (applying) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Processing...
+          } @else {
+            {{ isEditingApplication ? 'Save Changes' : 'Submit & Record Pitch' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>

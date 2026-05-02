@@ -1,0 +1,193 @@
+# API Gateway — port 8080
+#
+# ► Mode Eureka (recommandé)
+#   1) Démarrer eureka-server : integrated/eureka-server → http://localhost:8761 (dashboard)
+#   2) Démarrer les microservices (ils s’enregistrent : user-service, job-service, event-service, …)
+#   3) Démarrer cette gateway SANS profil « local » :
+#        mvn spring-boot:run   (depuis integrated/api-gateway)
+#   Les routes utilisent uri: lb://<spring.application.name> — résolution via le registre Eureka.
+#   Si 503 / « Unable to find instance » : vérifier que le service apparaît sur le dashboard Eureka.
+#
+# ► Mode sans Eureka (profil local uniquement)
+#   mvn spring-boot:run -Dspring-boot.run.profiles=local
+#   Voir application-local.yml (instances fixes, pas de serveur 8761).
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/api/events/**,/api/reservations/**
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**,/api/notifications/**
+
+        - id: certificate-service
+          uri: lb://certificate-service
+          predicates:
+            - Path=/api/certificates/**
+
+        - id: quiz-feedback-service
+          uri: lb://quiz-feedback-service
+          predicates:
+            - Path=/api/quizzes/**,/api/questions/**,/api/attempts/**,/api/feedbacks/**
+
+        - id: ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/ai/**,/api/chat/**,/api/quiz-generator/**,/api/feedback-analysis/**
+
+        - id: course-service
+          uri: lb://course-service
+          predicates:
+            - Path=/api/courses/**
+
+        - id: preevaluation-service
+          uri: lb://preevaluation-service
+          predicates:
+            - Path=/api/preevaluation/**
+
+        # Auth, utilisateurs, OAuth, login form, fichiers uploadés (avatars, etc.)
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**,/api/users/**,/api/me/**,/api/admin/**,/api/app-pin/**,/api/webauthn/**,/oauth2/**,/login/oauth2/**,/login/**,/logout/**,/uploads/**
+
+        - id: job-service
+          uri: lb://job-service
+          predicates:
+            - Path=/api/jobs/**,/api/ratings/**,/api/saved-jobs/**,/api/cv-profiles/**,/api/cv-profile/**
+
+        - id: application-service
+          uri: lb://application-service
+          predicates:
+            - Path=/api/applications/**,/api/meetings/**,/api/job-notifications/**
+
+        # Node.js + MongoDB — pas sur Eureka ; URL directe (Docker : nom du service)
+        - id: mongo-event-service
+          uri: "${MONGO_EVENT_SERVICE_URI:http://localhost:8090}"
+          predicates:
+            - Path=/api/mongo-events/**
+
+        # OpenAPI des MS — StripPrefix (évite ${segment} interprété comme placeholder Spring dans RewritePath)
+        - id: openapi-job-service
+          uri: lb://job-service
+          predicates:
+            - Path=/docs-job/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/docs-user/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/docs-event/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/docs-payment/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-certificate-service
+          uri: lb://certificate-service
+          predicates:
+            - Path=/docs-certificate/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-quiz-service
+          uri: lb://quiz-feedback-service
+          predicates:
+            - Path=/docs-quiz/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-ai-service
+          uri: lb://ai-service
+          predicates:
+            - Path=/docs-ai/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-course-service
+          uri: lb://course-service
+          predicates:
+            - Path=/docs-course/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-preevaluation-service
+          uri: lb://preevaluation-service
+          predicates:
+            - Path=/docs-preevaluation/**
+          filters:
+            - StripPrefix=1
+
+        - id: openapi-application-service
+          uri: lb://application-service
+          predicates:
+            - Path=/docs-application/**
+          filters:
+            - StripPrefix=1
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+server:
+  port: 8080
+
+# Swagger UI sur http://localhost:8080/swagger-ui.html — liens vers les OpenAPI des MS
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /docs-user/v3/api-docs
+      - name: job-service
+        url: /docs-job/v3/api-docs
+      - name: event-service
+        url: /docs-event/v3/api-docs
+      - name: payment-service
+        url: /docs-payment/v3/api-docs
+      - name: certificate-service
+        url: /docs-certificate/v3/api-docs
+      - name: quiz-feedback-service
+        url: /docs-quiz/v3/api-docs
+      - name: ai-service
+        url: /docs-ai/v3/api-docs
+      - name: course-service
+        url: /docs-course/v3/api-docs
+      - name: preevaluation-service
+        url: /docs-preevaluation/v3/api-docs
+      - name: application-service
+        url: /docs-application/v3/api-docs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}

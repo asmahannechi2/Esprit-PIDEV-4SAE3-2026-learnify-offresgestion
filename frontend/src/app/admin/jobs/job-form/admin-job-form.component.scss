@@ -1,0 +1,92 @@
+@use '../../_admin-shared' as *;
+
+.form-page {
+  max-width: 640px;
+}
+
+.loading-text {
+  color: $text-muted;
+}
+
+.alert-error {
+  background: rgba($admin-cta, 0.1);
+  color: $admin-cta;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.form-card {
+  background: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: $admin-primary;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid $border-color;
+}
+
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: $admin-cta;
+  margin-top: 6px;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 4px;
+}
+
+.form-input.ng-invalid.ng-touched {
+  border-color: rgba($admin-cta, 0.5);
+}
+
+.publication-scheduled {
+  margin-top: 8px;
+}
+
+.label-with-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label-with-clock .ti-clock {
+  font-size: 1.1rem;
+  color: $text-muted;
+}

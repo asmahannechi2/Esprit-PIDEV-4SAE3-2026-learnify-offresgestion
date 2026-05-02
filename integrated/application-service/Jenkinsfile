@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "application-service"
+        DOCKER_TAG = "latest"
+        // Remplacez par votre URL SonarQube si différent de localhost
+        SONAR_URL = "http://localhost:9000"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('integrated/application-service') {
+                    sh './mvnw test'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('integrated/application-service') {
+                    // Utilise le token SonarQube configuré dans Jenkins ou passé en paramètre
+                    // sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL}"
+                }
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                dir('integrated/application-service') {
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('integrated/application-service') {
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh "docker stop ${DOCKER_IMAGE} || true"
+                sh "docker rm ${DOCKER_IMAGE} || true"
+                sh "docker run -d --name ${DOCKER_IMAGE} -p 8095:8095 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+    }
+}

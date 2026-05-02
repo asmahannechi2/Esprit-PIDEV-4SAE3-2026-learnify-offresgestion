@@ -1,0 +1,6 @@
+# Partagé par tous les clients Config Server (learnify.integrated)
+learnify:
+  config-server:
+    version: 1
+  documentation:
+    swagger-gateway: true

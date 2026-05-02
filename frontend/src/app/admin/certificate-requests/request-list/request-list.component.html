@@ -1,0 +1,137 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 fw-bold">Certificate Requests</h2>
+      <p class="text-muted mb-0 small">Review and manage student certificate requests</p>
+    </div>
+    <button class="btn btn-outline-primary" (click)="load()">
+      <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body py-3">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" placeholder="Search by student, course or email..."
+              [(ngModel)]="searchTerm" (input)="applyFilters()" />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex gap-2 flex-wrap">
+            @for (s of statusOptions; track s) {
+              <button class="btn btn-sm"
+                [class.btn-primary]="filterStatus === s"
+                [class.btn-outline-secondary]="filterStatus !== s"
+                (click)="filterStatus = s; applyFilters()">
+                {{ s }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="col-md-2 text-end">
+          <span class="badge bg-primary rounded-pill fs-6">{{ filtered.length }} requests</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2 text-muted">Loading requests...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error) {
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading && !error) {
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        @if (filtered.length === 0) {
+          <div class="text-center py-5">
+            <i class="bi bi-inbox text-muted" style="font-size:3rem"></i>
+            <h5 class="mt-3 text-muted">No requests found</h5>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Student</th>
+                  <th>Course</th>
+                  <th>Request Date</th>
+                  <th>Status</th>
+                  <th>Notes</th>
+                  <th>Reviewed By</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (req of filtered; track req.id) {
+                  <tr>
+                    <td class="text-muted small">{{ req.id }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-xs bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                          style="width:36px;height:36px;font-size:14px">
+                          {{ req.studentName?.charAt(0) ?? 'S' }}
+                        </div>
+                        <div>
+                          <div class="fw-medium">{{ req.studentName ?? 'Student ' + req.studentId }}</div>
+                          <small class="text-muted">{{ req.studentEmail }}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="fw-medium">{{ req.courseName ?? 'Course ' + req.courseId }}</span>
+                    </td>
+                    <td>
+                      <small>{{ req.requestDate ? (req.requestDate | date:'mediumDate') : '—' }}</small>
+                    </td>
+                    <td>
+                      <span class="badge {{ getStatusClass(req.status) }}">
+                        <i class="bi {{ getStatusIcon(req.status) }} me-1"></i>{{ req.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ req.notes ?? '—' }}</small>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ req.reviewerName ?? (req.reviewedBy ? 'Admin ' + req.reviewedBy : '—') }}</small>
+                    </td>
+                    <td>
+                      <div class="d-flex justify-content-center gap-1">
+                        @if (req.status === 'PENDING') {
+                          <button class="btn btn-sm btn-outline-success" (click)="approve(req)" title="Approve">
+                            <i class="bi bi-check-lg"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger" (click)="reject(req)" title="Reject">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                        }
+                        <button class="btn btn-sm btn-outline-danger" (click)="delete(req)" title="Delete">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

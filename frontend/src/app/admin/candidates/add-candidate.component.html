@@ -1,0 +1,46 @@
+<div class="card p-3">
+  <h4>Ajouter un candidat</h4>
+  <p class="text-muted small mb-3">
+    Crée un compte avec le rôle <strong>CANDIDATE</strong> (postuler aux offres, CV, etc.). L’e-mail peut être n’importe quelle adresse valide (pas d’obligation &#64;learnify.com).
+  </p>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="mb-3">
+      <label>Prénom</label>
+      <input class="form-control" formControlName="firstName" autocomplete="given-name">
+    </div>
+
+    <div class="mb-3">
+      <label>Nom</label>
+      <input class="form-control" formControlName="lastName" autocomplete="family-name">
+    </div>
+
+    <div class="mb-3">
+      <label>E-mail (identifiant de connexion)</label>
+      <input type="email" class="form-control" formControlName="email" autocomplete="email" placeholder="candidat@exemple.com">
+      <div class="text-danger small" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+        <span *ngIf="form.get('email')?.errors?.['required']">Champ requis.</span>
+        <span *ngIf="form.get('email')?.errors?.['email']">Adresse e-mail invalide.</span>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label>Mot de passe initial</label>
+      <input type="password" class="form-control" formControlName="password" autocomplete="new-password">
+      <small class="text-muted">Au moins 6 caractères. Le candidat pourra le changer après connexion.</small>
+    </div>
+
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+      <div *ngIf="msg" class="toast show align-items-center text-bg-success border-0" role="alert">
+        <div class="d-flex"><div class="toast-body">{{ msg }}</div></div>
+      </div>
+      <div *ngIf="err" class="toast show align-items-center text-bg-danger border-0" role="alert">
+        <div class="d-flex"><div class="toast-body">{{ err }}</div></div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" [disabled]="loading">
+      {{ loading ? 'Création…' : 'Créer le compte candidat' }}
+    </button>
+  </form>
+</div>

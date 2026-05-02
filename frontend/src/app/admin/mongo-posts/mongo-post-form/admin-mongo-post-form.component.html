@@ -1,0 +1,93 @@
+<div class="form-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Modifier le post' : 'Nouveau post' }}</h1>
+      <p class="page-subtitle">Contenu stocké dans MongoDB (mongo-event-service)</p>
+    </div>
+    <a routerLink="/admin/mongo-posts" class="btn-admin outline">
+      <i class="ti ti-arrow-left"></i> Retour
+    </a>
+  </div>
+
+  @if (loading) {
+    <p class="loading-text">Chargement...</p>
+  } @else {
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+
+    <form #form="ngForm" (ngSubmit)="submit(form)" class="form-card">
+      <div class="form-group">
+        <label for="title">Titre *</label>
+        <input
+          id="title"
+          type="text"
+          [(ngModel)]="title"
+          name="title"
+          class="form-input"
+          required
+          minlength="1"
+          maxlength="300"
+          placeholder="Titre de l'article"
+          #titleRef="ngModel"
+        />
+        @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+          <span class="field-error">Le titre est requis (max. 300 caractères).</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="status">Statut</label>
+        <select id="status" [(ngModel)]="status" name="status" class="form-input">
+          <option value="draft">Brouillon</option>
+          <option value="published">Publié</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="authorLabel">Auteur (affichage)</label>
+        <input
+          id="authorLabel"
+          type="text"
+          [(ngModel)]="authorLabel"
+          name="authorLabel"
+          class="form-input"
+          maxlength="120"
+          placeholder="Optionnel"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="excerpt">Résumé</label>
+        <textarea
+          id="excerpt"
+          [(ngModel)]="excerpt"
+          name="excerpt"
+          class="form-input"
+          rows="2"
+          maxlength="500"
+          placeholder="Court extrait (optionnel)"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="content">Contenu</label>
+        <textarea
+          id="content"
+          [(ngModel)]="content"
+          name="content"
+          class="form-input"
+          rows="12"
+          placeholder="Corps du post (texte)"
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-admin outline" routerLink="/admin/mongo-posts">Annuler</button>
+        <button type="submit" class="btn-admin primary" [disabled]="saving">
+          {{ saving ? 'Enregistrement...' : (isEdit ? 'Enregistrer' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

@@ -1,0 +1,141 @@
+<app-navbar></app-navbar>
+
+<section class="py-8 bg-light">
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="d-flex flex-wrap gap-2">
+          <a routerLink="/" class="btn btn-sm btn-outline-secondary">Back to Home</a>
+          <a routerLink="/job-offers" class="btn btn-sm btn-outline-primary">Apply for Job</a>
+          <a routerLink="/courses" class="btn btn-sm btn-outline-primary">Go to Courses</a>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-6">
+      <div class="col-12">
+        <h1 class="display-4 fw-bold">My CV</h1>
+        <p class="lead text-muted">Create and manage your resume for job applications</p>
+      </div>
+    </div>
+
+    <!-- ATS CV profil (enseignants) : recommandations d'offres selon le CV -->
+    @if (isTeacher) {
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="card shadow-sm border-0 rounded-4 ats-cv-card">
+            <div class="card-body p-4">
+              <h5 class="card-title fw-bold mb-2">
+                <i class="ti ti-file-description me-2"></i>CV profil ATS
+              </h5>
+              <p class="text-muted small mb-3">
+                Téléversez votre CV (PDF) pour que nous puissions vous recommander les offres les plus adaptées à votre profil.
+              </p>
+              @if (atsLoading) {
+                <p class="text-muted mb-0">Chargement...</p>
+              } @else if (hasCv) {
+                <div class="modify-cv-zone rounded-3 p-3 mb-3 bg-light border border-success">
+                  <h6 class="fw-bold mb-2"><i class="ti ti-edit me-2"></i>Modifier / Remplacer votre CV</h6>
+                  <p class="small text-muted mb-2 mb-0">Un CV est déjà enregistré. Téléversez un nouveau PDF pour le remplacer et mettre à jour les recommandations d'offres.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="badge bg-success rounded-pill"><i class="ti ti-circle-check me-1"></i>CV enregistré</span>
+                  <span class="small text-muted">Les offres sur la page Job Offers sont classées par pertinence.</span>
+                </div>
+              } @else {
+                <p class="small text-muted mb-2">Téléversez votre CV (PDF) pour activer les recommandations.</p>
+              }
+              @if (atsSuccess) {
+                <div class="alert alert-success py-2 mb-2">{{ atsSuccess }}</div>
+              }
+              @if (atsError) {
+                <div class="alert alert-danger py-2 mb-2">{{ atsError }}</div>
+              }
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <label class="mb-0 small fw-semibold">Choisir un fichier PDF :</label>
+                <input type="file" accept=".pdf,application/pdf" class="form-control form-control-sm w-auto" (change)="onCvFileSelected($event)" [disabled]="atsUploading" />
+                @if (atsUploading) {
+                  <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                }
+              </div>
+              <a routerLink="/job-offers" class="btn btn-sm btn-primary mt-3 rounded-pill">
+                <i class="ti ti-briefcase me-1"></i>Voir les offres recommandées
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-5">
+            <form #cvFormRef="ngForm" (ngSubmit)="saveCv()">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Curriculum Vitae</h5>
+                @if (isEditing) {
+                  <button type="submit" class="btn btn-primary rounded-pill" [disabled]="cvFormRef.invalid">Save</button>
+                } @else {
+                  <button type="button" class="btn btn-outline-primary rounded-pill" (click)="toggleEdit()">Edit</button>
+                }
+              </div>
+
+              <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">Full Name *</label>
+                  <input type="text" class="form-control" [(ngModel)]="cv.fullName" name="fullName" [readonly]="!isEditing" required minlength="1" #fullNameRef="ngModel">
+                  @if (isEditing && fullNameRef.invalid && (fullNameRef.dirty || fullNameRef.touched)) {
+                    <span class="text-danger small">Le nom est requis.</span>
+                  }
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">Email *</label>
+                  <input type="email" class="form-control" [(ngModel)]="cv.email" name="email" [readonly]="!isEditing" required email #emailRef="ngModel">
+                  @if (isEditing && emailRef.invalid && (emailRef.dirty || emailRef.touched)) {
+                    <span class="text-danger small">Email requis et valide.</span>
+                  }
+                </div>
+                <div class="col-12 mb-3">
+                  <label class="form-label small text-muted">Phone</label>
+                  <input type="text" class="form-control" [(ngModel)]="cv.phone" name="phone" [readonly]="!isEditing">
+                </div>
+                <div class="col-12 mb-3">
+                  <label class="form-label small text-muted">Summary</label>
+                  <textarea class="form-control" rows="3" [(ngModel)]="cv.summary" name="summary" [readonly]="!isEditing"></textarea>
+                </div>
+              </div>
+            </form>
+
+            <h6 class="fw-bold mb-3">Education</h6>
+            @for (edu of cv.education; track edu.degree) {
+              <div class="border-bottom pb-3 mb-3">
+                <strong>{{ edu.degree }}</strong> - {{ edu.school }} ({{ edu.year }})
+              </div>
+            }
+
+            <h6 class="fw-bold mb-3">Skills</h6>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              @for (skill of cv.skills; track skill) {
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">{{ skill }}</span>
+              }
+            </div>
+
+            <h6 class="fw-bold mb-3">Experience</h6>
+            @for (exp of cv.experience; track exp.role) {
+              <div class="border-bottom pb-3 mb-3">
+                <strong>{{ exp.role }}</strong> - {{ exp.company }} ({{ exp.period }})
+                <p class="small text-muted mb-0 mt-1">{{ exp.desc }}</p>
+              </div>
+            }
+
+            <div class="mt-4">
+              <a routerLink="/job-offers" class="btn btn-primary rounded-pill">Apply for Jobs</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

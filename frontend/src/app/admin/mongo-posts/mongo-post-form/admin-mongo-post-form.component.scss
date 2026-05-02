@@ -1,0 +1,131 @@
+@use '../../_admin-shared' as *;
+
+.form-page {
+  max-width: 720px;
+}
+
+.loading-text {
+  color: $text-muted;
+}
+
+.alert-error {
+  background: rgba($admin-cta, 0.1);
+  color: $admin-cta;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.form-card {
+  background: $card-bg;
+  border: 1px solid $border-color;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-dark;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: $admin-primary;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid $border-color;
+}
+
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: $admin-cta;
+  margin-top: 6px;
+}
+
+.form-input.ng-invalid.ng-touched {
+  border-color: rgba($admin-cta, 0.5);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: $admin-primary;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 15px;
+  color: $text-muted;
+  margin: 6px 0 0;
+}
+
+.btn-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+
+  &.primary {
+    background: linear-gradient(135deg, $admin-primary, $admin-secondary);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(61, 61, 96, 0.25);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &.outline {
+    background: $card-bg;
+    color: $admin-primary;
+    border: 2px solid $border-color;
+
+    &:hover {
+      border-color: rgba($admin-primary, 0.35);
+    }
+  }
+}

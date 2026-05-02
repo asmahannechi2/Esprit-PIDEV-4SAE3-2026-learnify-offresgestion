@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "frontend-service"
+        DOCKER_TAG = "latest"
+        SONAR_URL = "http://localhost:9000"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('frontend') {
+                    // Note: Nécessite un navigateur headless comme ChromeHeadless ou FirefoxHeadless
+                    sh 'npm run test'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('frontend') {
+                    // Pour le front, on peut utiliser le sonar-scanner direct ou via npm
+                    // sh "npx sonar-scanner -Dsonar.host.url=${SONAR_URL}"
+                    echo "Analyse SonarQube pour le front (configuration requise)"
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('frontend') {
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh "docker stop ${DOCKER_IMAGE} || true"
+                sh "docker rm ${DOCKER_IMAGE} || true"
+                sh "docker run -d --name ${DOCKER_IMAGE} -p 80:80 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+    }
+}

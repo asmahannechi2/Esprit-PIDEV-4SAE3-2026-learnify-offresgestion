@@ -1,0 +1,136 @@
+.hero-section {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  padding: 60px 0 50px;
+}
+
+.stat-box {
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 16px 28px;
+  text-align: center;
+  color: white;
+}
+
+// Badge Cards
+.badge-card {
+  border-radius: 20px !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  &:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.12) !important; }
+}
+
+.badge-icon-wrap {
+  width: 90px; height: 90px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+  border: 4px solid rgba(255,255,255,0.8);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.criteria-box {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #64748b;
+  text-align: left;
+}
+
+// LinkedIn Button
+.linkedin-btn {
+  background: #0077b5; color: #fff; border: none;
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 0.2s; cursor: pointer;
+  &:hover { background: #005885; }
+  &.shared { background: #28a745; }
+}
+
+// AI Button
+.btn-ai {
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white; border: none; font-weight: 600;
+  font-size: 13px; padding: 10px 20px; border-radius: 10px;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.9; color: white; }
+  &:disabled { opacity: 0.6; }
+}
+
+// AI Panel
+.ai-panel {
+  border: 1px solid #e0d7ff;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #faf8ff;
+  box-shadow: 0 4px 20px rgba(102,16,242,0.08);
+}
+.ai-panel-header {
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  color: white; padding: 14px 20px;
+  font-size: 15px; font-weight: 700;
+}
+.ai-body { padding: 24px; }
+.ai-badge-preview {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+  i { font-size: 3rem; color: white; }
+}
+.bg-gradient-ai { background: linear-gradient(90deg, #6610f2, #0d6efd) !important; }
+.missing-tag {
+  background: #fff0f0; color: #dc3545;
+  border: 1px solid #fecaca;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+}
+
+// Modal
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+.modal-box {
+  background: white;
+  border-radius: 24px;
+  padding: 36px;
+  width: 100%; max-width: 480px;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.25s ease;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: #f1f5f9; border: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: #64748b;
+  transition: background 0.2s;
+  &:hover { background: #e2e8f0; }
+}
+.modal-badge-icon {
+  width: 110px; height: 110px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+  border: 5px solid rgba(255,255,255,0.8);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.modal-details { display: flex; flex-direction: column; gap: 14px; }
+.detail-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 12px 16px;
+  background: #f8fafc; border-radius: 12px;
+  i { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+}
+.detail-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.detail-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

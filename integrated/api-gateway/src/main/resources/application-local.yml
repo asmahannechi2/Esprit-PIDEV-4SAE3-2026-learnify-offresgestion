@@ -1,0 +1,62 @@
+# Profil « local » — UNIQUEMENT si tu ne lances PAS Eureka (8761).
+# Avec Eureka : ne pas activer ce profil ; utilise application.yml seul (fetch-registry sur Eureka).
+#
+# Démarrage sans Eureka : mvn spring-boot:run -Dspring-boot.run.profiles=local (integrated/api-gateway)
+# + microservices sur les ports ci-dessous.
+
+spring:
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            event-service:
+              - uri: http://127.0.0.1:8081
+            payment-service:
+              - uri: http://127.0.0.1:8082
+            certificate-service:
+              - uri: http://127.0.0.1:8083
+            quiz-feedback-service:
+              - uri: http://127.0.0.1:8084
+            ai-service:
+              - uri: http://127.0.0.1:8085
+            course-service:
+              - uri: http://127.0.0.1:8086
+            user-service:
+              - uri: http://127.0.0.1:8087
+            job-service:
+              - uri: http://127.0.0.1:8088
+            preevaluation-service:
+              - uri: http://127.0.0.1:8091
+            application-service:
+              - uri: http://127.0.0.1:8095
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: user-service
+        url: /docs-user/v3/api-docs
+      - name: job-service
+        url: /docs-job/v3/api-docs
+      - name: event-service
+        url: /docs-event/v3/api-docs
+      - name: payment-service
+        url: /docs-payment/v3/api-docs
+      - name: certificate-service
+        url: /docs-certificate/v3/api-docs
+      - name: quiz-feedback-service
+        url: /docs-quiz/v3/api-docs
+      - name: ai-service
+        url: /docs-ai/v3/api-docs
+      - name: course-service
+        url: /docs-course/v3/api-docs
+      - name: preevaluation-service
+        url: /docs-preevaluation/v3/api-docs
+      - name: application-service
+        url: /docs-application/v3/api-docs

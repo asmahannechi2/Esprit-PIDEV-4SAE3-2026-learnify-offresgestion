@@ -1,0 +1,5 @@
+learnify:
+  service:
+    name: job-service
+    messaging:
+      meeting-exchange: learnify.topic

@@ -1,0 +1,100 @@
+<div class="form-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ isEdit ? 'Modifier l\'offre' : 'Nouvelle offre' }}</h1>
+      <p class="page-subtitle">{{ isEdit ? 'Modifier les champs ci-dessous' : 'Remplir les champs pour créer une offre' }}</p>
+    </div>
+    <a routerLink="/admin/jobs" class="btn-admin outline">
+      <i class="ti ti-arrow-left"></i> Retour
+    </a>
+  </div>
+
+  @if (loading) {
+    <p class="loading-text">Chargement...</p>
+  } @else {
+    @if (error) {
+      <div class="alert-error">{{ error }}</div>
+    }
+
+    <form #form="ngForm" (ngSubmit)="submit(form)" class="form-card">
+      <div class="form-group">
+        <label for="titre">Titre *</label>
+        <input id="titre" type="text" [(ngModel)]="titre" name="titre" class="form-input" required minlength="1" maxlength="200" placeholder="Ex. Enseignant(e) d'anglais" #titreRef="ngModel" />
+        @if (titreRef.invalid && (titreRef.dirty || titreRef.touched)) {
+          <span class="field-error">Le titre est requis (1 à 200 caractères).</span>
+        }
+        <span class="field-hint">{{ titre.length }}/200</span>
+      </div>
+      <div class="form-group">
+        <label for="nbPlaces">Nombre de places *</label>
+        <input id="nbPlaces" type="number" [(ngModel)]="nbPlaces" name="nbPlaces" class="form-input" required min="1" max="9999" placeholder="1" #nbPlacesRef="ngModel" />
+        @if (nbPlacesRef.invalid && (nbPlacesRef.dirty || nbPlacesRef.touched)) {
+          <span class="field-error">Nombre de places requis (minimum 1, maximum 9999).</span>
+        }
+      </div>
+      <div class="form-group">
+        <label for="deadline">Date limite *</label>
+        <input id="deadline" type="datetime-local" [(ngModel)]="deadline" name="deadline" class="form-input" required #deadlineRef="ngModel" />
+        <span class="field-hint">La date limite peut être dans le passé (offre expirée).</span>
+        @if (deadlineRef.invalid && (deadlineRef.dirty || deadlineRef.touched)) {
+          <span class="field-error">La date limite est requise.</span>
+        }
+      </div>
+
+      @if (!isEdit) {
+        <div class="form-group publication-scheduled">
+          <label for="scheduledOpensAt" class="label-with-clock">
+            <i class="ti ti-clock" aria-hidden="true"></i>
+            Publication programmée
+          </label>
+          <input
+            id="scheduledOpensAt"
+            type="datetime-local"
+            [(ngModel)]="scheduledOpensAt"
+            name="scheduledOpensAt"
+            class="form-input"
+          />
+          <span class="field-hint">Optionnel : si vous choisissez une date et heure futures, l'offre restera en attente et sera ouverte aux candidatures à ce moment-là.</span>
+        </div>
+      }
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea
+          id="description"
+          [(ngModel)]="description"
+          name="description"
+          class="form-input"
+          rows="4"
+          required
+          minlength="10"
+          #descriptionRef="ngModel"
+        ></textarea>
+        @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
+          <span class="field-error">La description est requise (au moins 10 caractères).</span>
+        }
+      </div>
+      <div class="form-group">
+        <label for="requirements">Exigences *</label>
+        <textarea
+          id="requirements"
+          [(ngModel)]="requirements"
+          name="requirements"
+          class="form-input"
+          rows="4"
+          required
+          minlength="10"
+          #requirementsRef="ngModel"
+        ></textarea>
+        @if (requirementsRef.invalid && (requirementsRef.dirty || requirementsRef.touched)) {
+          <span class="field-error">Les exigences sont requises (au moins 10 caractères).</span>
+        }
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-admin outline" routerLink="/admin/jobs">Annuler</button>
+        <button type="submit" class="btn-admin primary" [disabled]="saving">
+          {{ saving ? 'Enregistrement...' : (isEdit ? 'Enregistrer' : 'Créer') }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

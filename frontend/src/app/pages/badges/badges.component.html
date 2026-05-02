@@ -1,0 +1,223 @@
+<app-navbar></app-navbar>
+
+<!-- Hero -->
+<section class="hero-section">
+  <div class="container text-center">
+    <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill">
+      <i class="bi bi-trophy-fill me-1"></i> ACHIEVEMENT BADGES
+    </span>
+    <h1 class="display-5 fw-bold mb-2">My Badges</h1>
+    <p class="lead opacity-75 mb-4">Showcase your achievements and share them with the world</p>
+    <div class="row justify-content-center g-3">
+      <div class="col-auto">
+        <div class="stat-box">
+          <div class="fs-3 fw-bold">{{ earnedCount }}</div>
+          <div class="small opacity-75">Badges Earned</div>
+        </div>
+      </div>
+      <div class="col-auto">
+        <div class="stat-box">
+          <div class="fs-3 fw-bold">{{ sharedCount }}</div>
+          <div class="small opacity-75">Shared on LinkedIn</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <!-- Success Toast -->
+    @if (shareSuccess) {
+      <div class="alert alert-success d-flex align-items-center mb-4 shadow-sm rounded-3">
+        <i class="bi bi-linkedin me-2 fs-5"></i><strong>{{ shareSuccess }}</strong>
+      </div>
+    }
+
+    <!-- AI Recommendation Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h5 class="fw-bold mb-0">Your Badges</h5>
+      <button class="btn btn-ai" (click)="getAiRecommendation()">
+        @if (loadingAi) {
+          <span class="spinner-border spinner-border-sm me-1"></span>Analyzing...
+        } @else {
+          <i class="bi bi-stars me-1"></i>
+          {{ showAiPanel ? 'Hide AI Recommendation' : 'AI Next Badge Recommendation' }}
+        }
+      </button>
+    </div>
+
+    <!-- AI Panel -->
+    @if (showAiPanel) {
+      <div class="ai-panel mb-4">
+        <div class="ai-panel-header">
+          <i class="bi bi-stars me-2"></i>AI Recommendation — Your Next Badge
+        </div>
+        @if (loadingAi) {
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary"></div>
+            <p class="text-muted mt-2 small">AI is analyzing your learning journey...</p>
+          </div>
+        }
+        @if (!loadingAi && aiRecommendation) {
+          <div class="ai-body">
+            <div class="row g-4 align-items-center">
+              <div class="col-md-4 text-center">
+                <div class="ai-badge-preview">
+                  <i class="bi bi-award-fill"></i>
+                </div>
+                <h5 class="fw-bold mt-3 mb-1">{{ aiRecommendation.badgeName }}</h5>
+                <p class="text-muted small mb-0">{{ aiRecommendation.course }}</p>
+              </div>
+              <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-semibold small">Readiness</span>
+                  <span class="fw-bold text-primary">{{ aiRecommendation.readyPercent }}%</span>
+                </div>
+                <div class="progress mb-3" style="height:10px;border-radius:10px">
+                  <div class="progress-bar bg-gradient-ai" role="progressbar"
+                    [style.width]="aiRecommendation.readyPercent + '%'"></div>
+                </div>
+                <p class="small text-muted fst-italic mb-3">
+                  <i class="bi bi-lightbulb-fill text-warning me-1"></i>{{ aiRecommendation.tip }}
+                </p>
+                <div class="fw-semibold small mb-2">What's missing:</div>
+                <div class="d-flex flex-wrap gap-2">
+                  @for (item of aiRecommendation.missing; track item) {
+                    <span class="missing-tag"><i class="bi bi-x-circle me-1"></i>{{ item }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (isLoading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Loading your badges...</p>
+      </div>
+    }
+
+    <!-- Badges Grid -->
+    @if (!isLoading && badges.length > 0) {
+      <div class="row g-4">
+        @for (badge of badges; track badge.id) {
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 badge-card border-0">
+              <div class="card-body p-4 text-center d-flex flex-column">
+
+                <!-- Icon -->
+                <div class="badge-icon-wrap mb-3"
+                  [style.background]="'linear-gradient(135deg,' + getLevelColor(badge.level) + ',#6610f2)'">
+                  <i class="bi {{ getLevelIcon(badge.level) }} text-white" style="font-size:2rem"></i>
+                </div>
+
+                <span class="badge rounded-pill mb-2" [style.background]="getLevelColor(badge.level)">
+                  {{ badge.level }}
+                </span>
+                <h5 class="fw-bold mb-1">{{ badge.name }}</h5>
+                <p class="text-muted small mb-2">{{ badge.description }}</p>
+                <div class="text-muted small mb-1"><i class="bi bi-book me-1"></i>{{ badge.courseName }}</div>
+                @if (badge.earnedDate) {
+                  <div class="text-muted small mb-3">
+                    <i class="bi bi-calendar-check me-1"></i>Earned on {{ badge.earnedDate | date:'mediumDate' }}
+                  </div>
+                }
+                <div class="criteria-box mb-3">
+                  <i class="bi bi-check-circle-fill text-success me-1"></i>{{ badge.criteria }}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-auto d-flex flex-column gap-2">
+                  <!-- View Details -->
+                  <button class="btn btn-outline-primary btn-sm w-100" (click)="openModal(badge)">
+                    <i class="bi bi-eye me-1"></i>View Details
+                  </button>
+                  <!-- Download -->
+                  <button class="btn btn-outline-secondary btn-sm w-100" (click)="downloadBadge(badge)">
+                    <i class="bi bi-download me-1"></i>Download Badge
+                  </button>
+                  <!-- LinkedIn -->
+                  <button class="linkedin-btn w-100" [class.shared]="badge.isPublishedToLinkedIn"
+                    (click)="shareOnLinkedIn(badge)">
+                    <i class="bi bi-linkedin"></i>
+                    {{ badge.isPublishedToLinkedIn ? 'Shared on LinkedIn ✓' : 'Share on LinkedIn' }}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</section>
+
+<!-- ── Badge Detail Modal ─────────────────────────────── -->
+@if (showModal && selectedBadge) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <div class="text-center mb-4">
+        <div class="modal-badge-icon mb-3"
+          [style.background]="'linear-gradient(135deg,' + getLevelColor(selectedBadge.level) + ',#6610f2)'">
+          <i class="bi {{ getLevelIcon(selectedBadge.level) }} text-white" style="font-size:3rem"></i>
+        </div>
+        <span class="badge rounded-pill px-3 py-2 mb-2" [style.background]="getLevelColor(selectedBadge.level)">
+          {{ selectedBadge.level }}
+        </span>
+        <h3 class="fw-bold mt-2 mb-1">{{ selectedBadge.name }}</h3>
+        <p class="text-muted">{{ selectedBadge.description }}</p>
+      </div>
+
+      <div class="modal-details">
+        <div class="detail-row">
+          <i class="bi bi-book text-primary"></i>
+          <div><div class="detail-label">Course</div><div class="detail-value">{{ selectedBadge.courseName }}</div></div>
+        </div>
+        <div class="detail-row">
+          <i class="bi bi-calendar-check text-success"></i>
+          <div><div class="detail-label">Earned Date</div><div class="detail-value">{{ selectedBadge.earnedDate | date:'longDate' }}</div></div>
+        </div>
+        <div class="detail-row">
+          <i class="bi bi-check-circle text-success"></i>
+          <div><div class="detail-label">Criteria</div><div class="detail-value">{{ selectedBadge.criteria }}</div></div>
+        </div>
+        <div class="detail-row">
+          <i class="bi bi-patch-check text-primary"></i>
+          <div><div class="detail-label">Status</div>
+            <div class="detail-value">
+              <span class="badge bg-success">{{ selectedBadge.status }}</span>
+              @if (selectedBadge.isPublishedToLinkedIn) {
+                <span class="badge bg-info text-dark ms-1"><i class="bi bi-linkedin me-1"></i>Shared</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-outline-secondary flex-grow-1" (click)="downloadBadge(selectedBadge)">
+          <i class="bi bi-download me-1"></i>Download
+        </button>
+        <button class="linkedin-btn flex-grow-1" [class.shared]="selectedBadge.isPublishedToLinkedIn"
+          (click)="shareOnLinkedIn(selectedBadge)">
+          <i class="bi bi-linkedin"></i>
+          {{ selectedBadge.isPublishedToLinkedIn ? 'Shared ✓' : 'Share on LinkedIn' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>

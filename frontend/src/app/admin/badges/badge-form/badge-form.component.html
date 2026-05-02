@@ -1,0 +1,132 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0 fw-bold">{{ isEditing ? 'Edit Badge' : 'Create Badge' }}</h2>
+      <p class="text-muted mb-0 small">{{ isEditing ? 'Update badge details' : 'Design a new achievement badge' }}</p>
+    </div>
+    <button class="btn btn-outline-secondary" (click)="cancel()">
+      <i class="bi bi-arrow-left me-1"></i> Back to Badges
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2 text-muted">Loading badge...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error }}</div>
+  }
+
+  @if (!isLoading) {
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                  <label class="form-label fw-semibold">Badge Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" formControlName="name"
+                    [class.is-invalid]="isInvalid('name')" placeholder="e.g. B2 English Master" />
+                  @if (isInvalid('name')) {
+                    <div class="invalid-feedback">Name is required (min 3 chars)</div>
+                  }
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Level <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="level">
+                    @for (l of levels; track l) { <option [value]="l">{{ l }}</option> }
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+                <textarea class="form-control" formControlName="description" rows="3"
+                  [class.is-invalid]="isInvalid('description')"
+                  placeholder="Describe what this badge represents..."></textarea>
+                @if (isInvalid('description')) {
+                  <div class="invalid-feedback">Description is required</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Criteria <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="criteria"
+                  [class.is-invalid]="isInvalid('criteria')"
+                  placeholder="e.g. Complete the course with a grade ≥ 80%" />
+                @if (isInvalid('criteria')) {
+                  <div class="invalid-feedback">Criteria is required</div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Badge Image URL</label>
+                <input type="url" class="form-control" formControlName="imageUrl"
+                  placeholder="https://example.com/badge.png" />
+                <div class="form-text">Leave empty to use the default badge icon</div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Course ID <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" formControlName="courseId"
+                    [class.is-invalid]="isInvalid('courseId')" placeholder="e.g. 1" />
+                  @if (isInvalid('courseId')) {
+                    <div class="invalid-feedback">Course ID is required</div>
+                  }
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Certificate ID</label>
+                  <input type="number" class="form-control" formControlName="certificateId" placeholder="Optional" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Status</label>
+                  <select class="form-select" formControlName="status">
+                    @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+                  </select>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 pt-2">
+                <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="isSaving">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving">
+                  @if (isSaving) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                  <i class="bi bi-check-circle me-1" *ngIf="!isSaving"></i>
+                  {{ isEditing ? 'Update Badge' : 'Create Badge' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Card -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-body text-center p-4">
+            <h6 class="fw-bold mb-3 text-muted text-uppercase small">Badge Preview</h6>
+            @if (form.get('imageUrl')?.value) {
+              <img [src]="form.get('imageUrl')?.value" alt="Badge preview"
+                class="rounded-circle mb-3" style="width:100px;height:100px;object-fit:cover;border:3px solid #e9ecef" />
+            } @else {
+              <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                style="width:100px;height:100px;background:linear-gradient(135deg,#0d6efd,#6610f2)">
+                <i class="bi bi-award-fill text-white" style="font-size:2.5rem"></i>
+              </div>
+            }
+            <h5 class="fw-bold">{{ form.get('name')?.value || 'Badge Name' }}</h5>
+            <p class="text-muted small">{{ form.get('description')?.value || 'Badge description...' }}</p>
+            <span class="badge bg-primary">{{ form.get('level')?.value }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
