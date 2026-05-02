@@ -8,6 +8,6 @@ RUN npm run build
 
 # Etape 2 : Serveur Nginx pour servir le contenu statique
 FROM nginx:alpine
-COPY --from=build-step /app/dist/learnhub/browser /usr/share/nginx/html
+COPY --from=build-step /app/dist/learnhub /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
