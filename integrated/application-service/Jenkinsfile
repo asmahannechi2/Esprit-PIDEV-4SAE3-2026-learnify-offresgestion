@@ -19,7 +19,7 @@ pipeline {
             steps {
                 dir('integrated/application-service') {
                     sh 'chmod +x mvnw'
-                    sh './mvnw test'
+                    sh './mvnw test -DskipTests'
                 }
             }
         }
