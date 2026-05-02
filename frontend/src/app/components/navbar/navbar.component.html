@@ -33,32 +33,27 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="/courses" class="nav-link" [class.active]="isActiveRoute('/courses')"
-             (click)="navigateToPage('/courses'); $event.preventDefault()">
+          <a routerLink="/courses" class="nav-link" [class.active]="isActiveRoute('/courses')">
             <i class="ti ti-book"></i> Courses
           </a>
         </li>
         <li class="nav-item">
-          <a href="/cart" class="nav-link" [class.active]="isActiveRoute('/cart')"
-             (click)="navigateToPage('/cart'); $event.preventDefault()">
+          <a routerLink="/cart" class="nav-link" [class.active]="isActiveRoute('/cart')">
             <i class="ti ti-shopping-cart"></i> Cart
           </a>
         </li>
         <li class="nav-item">
-          <a href="/clubs" class="nav-link" [class.active]="isActiveRoute('/clubs')"
-             (click)="navigateToPage('/clubs'); $event.preventDefault()">
+          <a routerLink="/clubs" class="nav-link" [class.active]="isActiveRoute('/clubs')">
             <i class="ti ti-users"></i> Clubs
           </a>
         </li>
         <li class="nav-item">
-          <a href="/events" class="nav-link" [class.active]="isActiveRoute('/events')"
-             (click)="navigateToPage('/events'); $event.preventDefault()">
+          <a routerLink="/events" class="nav-link" [class.active]="isActiveRoute('/events')">
             <i class="ti ti-calendar"></i> Events
           </a>
         </li>
         <li class="nav-item">
-          <a href="/events-advanced" class="nav-link" [class.active]="isActiveRoute('/events-advanced')"
-             (click)="navigateToPage('/events-advanced'); $event.preventDefault()">
+          <a routerLink="/events-advanced" class="nav-link" [class.active]="isActiveRoute('/events-advanced')">
             <i class="ti ti-star"></i> Events Pro
           </a>
         </li>
@@ -86,8 +81,8 @@
       <!-- CTA / profil : toujours à droite (comme avant) -->
       <div class="navbar-actions ms-lg-auto">
         <ng-container *ngIf="!currentUser; else loggedIn">
-          <a href="/auth/login?role=student" class="btn-link">Sign In</a>
-          <a href="/auth/signup-choice" class="btn-cta">
+          <a [routerLink]="['/auth/login']" [queryParams]="{ role: 'student' }" class="btn-link">Sign In</a>
+          <a routerLink="/auth/signup-choice" class="btn-cta">
             Get Started
             <i class="ti ti-arrow-right"></i>
           </a>
