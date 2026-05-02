@@ -55,7 +55,15 @@ pipeline {
             steps {
                 sh "docker stop ${DOCKER_IMAGE} || true"
                 sh "docker rm ${DOCKER_IMAGE} || true"
-                sh "docker run -d --name ${DOCKER_IMAGE} -p 8095:8095 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                sh """
+                    docker run -d --name ${DOCKER_IMAGE} \
+                    -p 8095:8095 \
+                    --link mysql-db:mysql-db \
+                    -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/learnify_applications?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
+                    -e SPRING_DATASOURCE_USERNAME='root' \
+                    -e SPRING_DATASOURCE_PASSWORD='votre_mdp' \
+                    ${DOCKER_IMAGE}:${DOCKER_TAG}
+                """
             }
         }
     }

@@ -6,8 +6,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Etape 2 : Serveur Nginx pour servir le contenu statique
+# Étape 2 : Serveur Nginx pour servir l'application
 FROM nginx:alpine
 COPY --from=build-step /app/dist/learnhub/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

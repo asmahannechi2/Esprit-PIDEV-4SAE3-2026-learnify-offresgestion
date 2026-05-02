@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "job-service"
+        DOCKER_IMAGE = "user-service"
         DOCKER_TAG = "latest"
         SONAR_URL = "http://localhost:9000"
     }
@@ -16,7 +16,7 @@ pipeline {
 
         stage('Unit Tests') {
             steps {
-                dir('integrated/job-service') {
+                dir('integrated/user-service') {
                     sh 'chmod +x mvnw'
                     sh './mvnw test -DskipTests'
                 }
@@ -25,7 +25,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                dir('integrated/job-service') {
+                dir('integrated/user-service') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                         sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
                     }
@@ -35,7 +35,7 @@ pipeline {
 
         stage('Build Artifact') {
             steps {
-                dir('integrated/job-service') {
+                dir('integrated/user-service') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
@@ -44,7 +44,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('integrated/job-service') {
+                dir('integrated/user-service') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                 }
             }
@@ -56,9 +56,9 @@ pipeline {
                 sh "docker rm ${DOCKER_IMAGE} || true"
                 sh """
                     docker run -d --name ${DOCKER_IMAGE} \
-                    -p 8088:8088 \
+                    -p 8087:8087 \
                     --link mysql-db:mysql-db \
-                    -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/learnify_jobs?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
+                    -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/user_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
                     -e SPRING_DATASOURCE_USERNAME='root' \
                     -e SPRING_DATASOURCE_PASSWORD='votre_mdp' \
                     ${DOCKER_IMAGE}:${DOCKER_TAG}
