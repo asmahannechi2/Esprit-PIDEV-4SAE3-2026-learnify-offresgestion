@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "frontend-service"
         DOCKER_TAG = "latest"
         SONAR_URL = "http://localhost:9000"
+        CHROME_BIN = "/usr/bin/chromium-browser"
     }
 
     stages {
