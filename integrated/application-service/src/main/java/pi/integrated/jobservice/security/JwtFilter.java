@@ -47,14 +47,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
             try {
-                System.out.println("DEBUG: Processing token for path: " + request.getRequestURI());
                 if (!jwtUtil.isTokenExpired(token)) {
                     String email = jwtUtil.extractEmail(token);
                     String role = jwtUtil.extractRole(token);
                     Long userId = jwtUtil.extractUserId(token);
                     String name = jwtUtil.extractName(token);
-
-                    System.out.println("DEBUG: Extracted userId: " + userId + ", email: " + email);
 
                     if (email != null && role != null && !role.isBlank()) {
                         String normalized = role.trim();
@@ -75,11 +72,9 @@ public class JwtFilter extends OncePerRequestFilter {
                     request.setAttribute("userEmail", email);
                     request.setAttribute("userRole", role);
                     request.setAttribute("userName", name);
-                } else {
-                    System.out.println("DEBUG: Token is expired");
                 }
             } catch (Exception e) {
-                System.out.println("DEBUG: Token parsing failed: " + e.getMessage());
+                // Token invalid
             }
         }
 

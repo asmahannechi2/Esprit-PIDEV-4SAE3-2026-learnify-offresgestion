@@ -48,7 +48,6 @@ public class ApplicationController {
         // userId and userName are typically extracted from JWT and placed in attributes by a filter/interceptor
         Long teacherId = (Long) request.getAttribute("userId");
         if (teacherId == null) {
-            System.err.println("WARN: userId is null in Apply request, using fallback 1L");
             teacherId = 1L; // Fallback pour éviter le crash 500
         }
         String teacherName = (String) request.getAttribute("userName");
