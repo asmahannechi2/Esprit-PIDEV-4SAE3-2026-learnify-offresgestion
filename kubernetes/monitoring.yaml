@@ -94,4 +94,4 @@ spec:
             - containerPort: 3000
           resources:
             limits:
-              memory: "256Mi"
+              memory: "400Mi"
