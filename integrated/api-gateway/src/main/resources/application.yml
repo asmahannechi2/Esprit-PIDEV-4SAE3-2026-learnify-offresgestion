@@ -55,7 +55,7 @@ spring:
 
         # Auth, utilisateurs, OAuth, login form, fichiers uploadés (avatars, etc.)
         - id: user-service
-          uri: lb://user-service
+          uri: http://user-service:8087
           predicates:
             - Path=/api/auth/**,/api/users/**,/api/me/**,/api/admin/**,/api/app-pin/**,/api/webauthn/**,/oauth2/**,/login/oauth2/**,/login/**,/logout/**,/uploads/**
 
