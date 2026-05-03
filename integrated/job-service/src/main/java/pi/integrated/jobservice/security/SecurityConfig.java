@@ -37,7 +37,7 @@ public class SecurityConfig {
                 // Saved jobs — any authenticated user
                 .requestMatchers("/api/saved-jobs/**").authenticated()
                 // CV profile — TUTOR, CANDIDATE or ADMIN
-                .requestMatchers("/api/cv-profiles/**").hasAnyRole("TUTOR", "CANDIDATE", "ADMIN")
+                .requestMatchers("/api/cv-profiles/**", "/api/cv-profile/**").authenticated()
                 // Applications — TUTOR or CANDIDATE applies, ADMIN manages
                 .requestMatchers(HttpMethod.POST, "/api/applications/**").hasAnyRole("TUTOR", "CANDIDATE")
                 // PUT/PATCH : seuls statut + futurs endpoints ; contrôle ADMIN.

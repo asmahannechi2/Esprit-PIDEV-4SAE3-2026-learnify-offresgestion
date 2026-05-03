@@ -58,7 +58,7 @@ public class ApplicationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+
     public ResponseEntity<List<ApplicationDTO>> getAll(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer minScore,
@@ -67,7 +67,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/job/{jobId}")
-    @PreAuthorize("hasRole('ADMIN')")
+
     public ResponseEntity<List<ApplicationDTO>> getByJob(
             @PathVariable Long jobId,
             @RequestParam(required = false) String keyword,

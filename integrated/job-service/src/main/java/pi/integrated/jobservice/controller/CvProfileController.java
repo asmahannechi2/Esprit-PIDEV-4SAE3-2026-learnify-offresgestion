@@ -12,7 +12,7 @@ import pi.integrated.jobservice.service.TeacherCvProfileService;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/cv-profiles")
+@RequestMapping({"/api/cv-profiles", "/api/cv-profile"})
 @RequiredArgsConstructor
 public class CvProfileController {
 
