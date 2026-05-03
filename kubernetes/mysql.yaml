@@ -1,17 +1,4 @@
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: mysql-pv
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /mnt/data/mysql
----
-apiVersion: v1
 kind: Service
 metadata:
   name: mysql-db
@@ -30,17 +17,6 @@ data:
     CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'root';
     GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
     FLUSH PRIVILEGES;
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -66,7 +42,6 @@ spec:
           resources:
             limits:
               memory: "512Mi"
-              cpu: "500m"
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
@@ -74,8 +49,9 @@ spec:
               mountPath: /docker-entrypoint-initdb.d
       volumes:
         - name: mysql-storage
-          persistentVolumeClaim:
-            claimName: mysql-pvc
+          hostPath:
+            path: /mnt/data/mysql
+            type: DirectoryOrCreate
         - name: mysql-init
           configMap:
             name: mysql-init-config
