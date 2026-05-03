@@ -1,16 +1,13 @@
 package pi.integrated.jobservice.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pi.integrated.jobservice.dto.JobDTO;
 import pi.integrated.jobservice.model.Job;
 import pi.integrated.jobservice.repository.JobRepository;
 
@@ -26,7 +23,7 @@ class JobServiceTest {
     private JobService jobService;
 
     @Test
-    void getJobById_ShouldReturnJob() {
+    void getJobOrThrow_ShouldReturnJob() {
         // Given
         Job job = new Job();
         job.setId(1L);
@@ -34,7 +31,7 @@ class JobServiceTest {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(job));
 
         // When
-        JobDTO result = jobService.getJobById(1L);
+        Job result = jobService.getJobOrThrow(1L);
 
         // Then
         assertNotNull(result);
@@ -42,11 +39,11 @@ class JobServiceTest {
     }
 
     @Test
-    void getJobById_NotFound_ShouldThrowException() {
+    void getJobOrThrow_NotFound_ShouldThrowException() {
         // Given
         when(jobRepository.findById(1L)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(RuntimeException.class, () -> jobService.getJobById(1L));
+        assertThrows(RuntimeException.class, () -> jobService.getJobOrThrow(1L));
     }
 }
