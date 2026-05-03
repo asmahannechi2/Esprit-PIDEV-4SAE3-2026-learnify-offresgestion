@@ -29,6 +29,11 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8089
+          resources:
+            limits:
+              memory: "400Mi"
+            requests:
+              memory: "256Mi"
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql-db:3306/learnify_applications?createDatabaseIfNotExist=true
@@ -70,6 +75,11 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8088
+          resources:
+            limits:
+              memory: "400Mi"
+            requests:
+              memory: "256Mi"
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql-db:3306/learnify_jobs?createDatabaseIfNotExist=true

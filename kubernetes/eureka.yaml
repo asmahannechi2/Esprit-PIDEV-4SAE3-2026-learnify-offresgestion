@@ -25,10 +25,13 @@ spec:
     spec:
       containers:
         - name: eureka-server
-          image: eureka-server:latest # Assurez-vous d'avoir build l'image localement
-          imagePullPolicy: Never # Pour utiliser l'image locale de la VM
+          image: eureka-server:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8761
+          resources:
+            limits:
+              memory: "256Mi"
           env:
             - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
               value: "false"
