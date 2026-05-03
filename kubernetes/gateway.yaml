@@ -4,8 +4,8 @@ metadata:
   name: api-gateway
 spec:
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 8060
+      targetPort: 8060
   selector:
     app: api-gateway
   type: NodePort
@@ -26,15 +26,13 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: gatway-service:latest
+          image: api-gateway:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 8080
+            - containerPort: 8060
           resources:
             limits:
-              memory: "256Mi"
+              memory: "512Mi"
           env:
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: http://eureka-server:8761/eureka/
-            - name: SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED
-              value: "true"
