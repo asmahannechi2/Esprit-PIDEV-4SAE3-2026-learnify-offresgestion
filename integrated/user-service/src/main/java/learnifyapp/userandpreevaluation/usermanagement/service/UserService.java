@@ -19,7 +19,7 @@ import learnifyapp.userandpreevaluation.usermanagement.repository.KnownDeviceRep
 import learnifyapp.userandpreevaluation.usermanagement.repository.PasswordResetTokenRepository;
 import learnifyapp.userandpreevaluation.usermanagement.repository.UnblockPinTokenRepository;
 import learnifyapp.userandpreevaluation.usermanagement.repository.UserRepository;
-import learnifyapp.userandpreevaluation.messaging.UserRegistrationEventPublisher;
+
 import learnifyapp.userandpreevaluation.usermanagement.repository.UserSessionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class UserService {
     private final UnblockPinTokenRepository unblockPinTokenRepository;
 
     private final DeviceService deviceService;
-    private final UserRegistrationEventPublisher userRegistrationEventPublisher;
+
 
     private static final int MAX_FAILED_ATTEMPTS = 3;
     private static final Duration LOCKOUT_DURATION = Duration.ofMinutes(15);
@@ -77,8 +77,7 @@ public class UserService {
                        DeviceService deviceService,
                        DeviceLoginAttemptRepository deviceLoginAttemptRepository,
                        KnownDeviceRepository knownDeviceRepository,
-                       UnblockPinTokenRepository unblockPinTokenRepository,
-                       UserRegistrationEventPublisher userRegistrationEventPublisher) {
+                       UnblockPinTokenRepository unblockPinTokenRepository) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -90,7 +89,6 @@ public class UserService {
         this.deviceLoginAttemptRepository = deviceLoginAttemptRepository;
         this.knownDeviceRepository = knownDeviceRepository;
         this.unblockPinTokenRepository = unblockPinTokenRepository;
-        this.userRegistrationEventPublisher = userRegistrationEventPublisher;
     }
 
     private static String normalizeEmail(String email) {
@@ -151,7 +149,6 @@ public class UserService {
         user.setRole(Role.CANDIDATE);
 
         User saved = userRepository.save(user);
-        userRegistrationEventPublisher.publish(saved.getId(), saved.getEmail());
         return saved;
     }
 

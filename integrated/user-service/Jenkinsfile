@@ -58,9 +58,11 @@ pipeline {
                     docker run -d --name ${DOCKER_IMAGE} \
                     -p 8087:8087 \
                     --link mysql-db:mysql-db \
+                    --link eureka-server:eureka-server \
                     -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/user_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
                     -e SPRING_DATASOURCE_USERNAME='root' \
                     -e SPRING_DATASOURCE_PASSWORD='votre_mdp' \
+                    -e EUREKA_SERVER_HOST='eureka-server' \
                     ${DOCKER_IMAGE}:${DOCKER_TAG}
                 """
             }
