@@ -26,8 +26,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 dir('frontend') {
-                    // Note: Nécessite un navigateur headless comme ChromeHeadless ou FirefoxHeadless
-                    sh 'npm run test'
+                    sh 'npm run test -- --code-coverage'
                 }
             }
         }
@@ -35,9 +34,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('frontend') {
-                    // Pour le front, on peut utiliser le sonar-scanner direct ou via npm
-                    // sh "npx sonar-scanner -Dsonar.host.url=${SONAR_URL}"
-                    echo "Analyse SonarQube pour le front (configuration requise)"
+                    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                        sh "npx sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
         }
