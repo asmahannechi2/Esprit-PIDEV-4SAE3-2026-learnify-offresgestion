@@ -84,6 +84,7 @@ class ApplicationServiceTest {
         // Given
         Long jobId = 100L;
         Long teacherId = 1L;
+        when(jobClient.getJobById(jobId)).thenReturn(mockJob);
         when(applicationRepository.findByJobIdAndTeacherId(jobId, teacherId)).thenReturn(Optional.of(new Application()));
 
         // When & Then
