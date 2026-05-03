@@ -3,6 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Signin } from './signin';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('Signin', () => {
   let component: Signin;
@@ -11,7 +12,8 @@ describe('Signin', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule, FormsModule, ReactiveFormsModule],
-      declarations: [Signin]
+      declarations: [Signin],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
 
