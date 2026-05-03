@@ -154,7 +154,7 @@ spring:
             allowedHeaders: "*"
 
 server:
-  port: 8080
+  port: 8060
 
 # Swagger UI sur http://localhost:8080/swagger-ui.html — liens vers les OpenAPI des MS
 springdoc:
@@ -185,7 +185,7 @@ springdoc:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_SERVER_HOST:localhost}:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:

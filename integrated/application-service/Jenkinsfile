@@ -57,7 +57,7 @@ pipeline {
                 sh "docker rm ${DOCKER_IMAGE} || true"
                 sh """
                     docker run -d --name ${DOCKER_IMAGE} \
-                    -p 8095:8095 \
+                    -p 8089:8089 \
                     --link mysql-db:mysql-db \
                     --link eureka-server:eureka-server \
                     -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/learnify_applications?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
