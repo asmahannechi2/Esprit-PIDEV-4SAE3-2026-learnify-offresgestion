@@ -20,12 +20,14 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<NotificationDTO>> getMyNotifications(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return ResponseEntity.ok(List.of());
         return ResponseEntity.ok(notificationService.getNotificationsForUser(userId));
     }
 
     @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return ResponseEntity.ok(Map.of("count", 0L));
         long count = notificationService.countUnread(userId);
         return ResponseEntity.ok(Map.of("count", count));
     }
@@ -33,14 +35,14 @@ public class NotificationController {
     @PutMapping("/mark-all-read")
     public ResponseEntity<Void> markAllRead(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        notificationService.markAllRead(userId);
+        if (userId != null) notificationService.markAllRead(userId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/read")
     public ResponseEntity<Void> markRead(@PathVariable Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        notificationService.markRead(id, userId);
+        if (userId != null) notificationService.markRead(id, userId);
         return ResponseEntity.ok().build();
     }
 }

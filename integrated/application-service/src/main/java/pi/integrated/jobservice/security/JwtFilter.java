@@ -47,18 +47,16 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
             try {
+                System.out.println("DEBUG: Processing token for path: " + request.getRequestURI());
                 if (!jwtUtil.isTokenExpired(token)) {
                     String email = jwtUtil.extractEmail(token);
                     String role = jwtUtil.extractRole(token);
                     Long userId = jwtUtil.extractUserId(token);
                     String name = jwtUtil.extractName(token);
 
+                    System.out.println("DEBUG: Extracted userId: " + userId + ", email: " + email);
+
                     if (email != null && role != null && !role.isBlank()) {
-                        /*
-                         * Toujours poser l’auth JWT quand le token est valide.
-                         * Avant : on exigeait getAuthentication() == null — Spring met souvent une
-                         * AnonymousAuthenticationToken, donc le JWT n’était jamais appliqué → 403 sur hasRole.
-                         */
                         String normalized = role.trim();
                         if (normalized.toUpperCase().startsWith("ROLE_")) {
                             normalized = normalized.substring(5);
@@ -73,14 +71,15 @@ public class JwtFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
 
-                    // Store as request attributes for controller convenience
                     request.setAttribute("userId", userId);
                     request.setAttribute("userEmail", email);
                     request.setAttribute("userRole", role);
                     request.setAttribute("userName", name);
+                } else {
+                    System.out.println("DEBUG: Token is expired");
                 }
             } catch (Exception e) {
-                // Invalid token — proceed unauthenticated
+                System.out.println("DEBUG: Token parsing failed: " + e.getMessage());
             }
         }
 
