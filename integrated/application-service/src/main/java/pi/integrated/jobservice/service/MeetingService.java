@@ -7,7 +7,7 @@ import pi.integrated.jobservice.dto.MeetingDTO;
 import pi.integrated.jobservice.dto.NextMeetingDTO;
 import pi.integrated.jobservice.model.Application;
 import pi.integrated.jobservice.model.Meeting;
-import pi.integrated.jobservice.messaging.MeetingScheduledEventPublisher;
+
 import pi.integrated.jobservice.client.JobClient;
 import pi.integrated.jobservice.dto.JobDTO;
 import pi.integrated.jobservice.repository.ApplicationRepository;
@@ -25,7 +25,7 @@ public class MeetingService {
     private final MeetingRepository meetingRepository;
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
-    private final MeetingScheduledEventPublisher meetingScheduledEventPublisher;
+
     private final JobClient jobClient;
 
     @Transactional
@@ -71,7 +71,7 @@ public class MeetingService {
         notificationService.notifyTeacherMeetingScheduled(
                 app.getTeacherId(), meeting.getId(), meetingDate, "Offre: " + jobTitle);
 
-        meetingScheduledEventPublisher.publish(meeting.getId(), app.getId());
+
 
         return toDto(meeting);
     }
