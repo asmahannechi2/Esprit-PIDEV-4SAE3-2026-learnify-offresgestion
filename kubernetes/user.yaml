@@ -7,8 +7,8 @@ spec:
     app: user-service
   ports:
     - protocol: TCP
-      port: 8081
-      targetPort: 8081
+      port: 8087
+      targetPort: 8087
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,7 +29,7 @@ spec:
           image: user-service:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 8081
+            - containerPort: 8087
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:mysql://mysql-db:3306/learnify_users?createDatabaseIfNotExist=true
