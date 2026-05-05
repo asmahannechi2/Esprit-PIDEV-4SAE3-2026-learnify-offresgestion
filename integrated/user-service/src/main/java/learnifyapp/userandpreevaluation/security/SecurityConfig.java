@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
+                        // ✅ Actuator (Prometheus)
+                        .requestMatchers("/actuator/**").permitAll()
+
                         // ✅ auth classique
                         .requestMatchers("/api/auth/**").permitAll()
 
