@@ -52,19 +52,8 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "docker stop ${DOCKER_IMAGE} || true"
-                sh "docker rm ${DOCKER_IMAGE} || true"
-                sh """
-                    docker run -d --name ${DOCKER_IMAGE} \
-                    -p 8088:8088 \
-                    --link mysql-db:mysql-db \
-                    --link eureka-server:eureka-server \
-                    -e SPRING_DATASOURCE_URL='jdbc:mysql://mysql-db:3306/learnify_jobs?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true' \
-                    -e SPRING_DATASOURCE_USERNAME='root' \
-                    -e SPRING_DATASOURCE_PASSWORD='votre_mdp' \
-                    -e EUREKA_SERVER_HOST='eureka-server' \
-                    ${DOCKER_IMAGE}:${DOCKER_TAG}
-                """
+                sh 'kubectl apply -f kubernetes/backend.yaml --validate=false'
+                sh 'kubectl rollout restart deployment job-service'
             }
         }
     }

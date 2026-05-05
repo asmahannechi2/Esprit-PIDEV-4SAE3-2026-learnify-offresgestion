@@ -31,7 +31,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'kubectl apply -f kubernetes/gateway.yaml'
+                sh 'kubectl apply -f kubernetes/gateway.yaml --validate=false'
                 sh 'kubectl rollout restart deployment api-gateway'
             }
         }
