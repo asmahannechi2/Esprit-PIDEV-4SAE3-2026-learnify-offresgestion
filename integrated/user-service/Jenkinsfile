@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -46,6 +47,18 @@ pipeline {
             steps {
                 dir('integrated/user-service') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        ✅ stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh '''
+                    echo $PASS | docker login -u $USER --password-stdin
+                    docker tag user-service:latest wiwi2003/user-service:latest
+                    docker push wiwi2003/user-service:latest
+                    '''
                 }
             }
         }
