@@ -18,7 +18,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     sh 'chmod +x mvnw'
-                    sh './mvnw test'
+                    sh './mvnw test -Dhttps.protocols=TLSv1.2'
                 }
             }
         }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN} -Dhttps.protocols=TLSv1.2"
                     }
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     sh 'chmod +x mvnw'
-                    sh './mvnw clean package -DskipTests'
+                    sh './mvnw clean package -DskipTests -Dhttps.protocols=TLSv1.2'
                 }
             }
         }
