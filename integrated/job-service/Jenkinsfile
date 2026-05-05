@@ -9,6 +9,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -28,7 +29,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.token=${SONAR_TOKEN} -Dhttps.protocols=TLSv1.2"
                     }
                 }
             }
@@ -38,7 +39,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     sh 'chmod +x mvnw'
-                    sh './mvnw clean package -DskipTests'
+                    sh './mvnw clean package -DskipTests -Dhttps.protocols=TLSv1.2'
                 }
             }
         }
@@ -59,9 +60,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                        docker login -u $DOCKER_USER -p $DOCKER_PASS
-                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} $DOCKERHUB_USER/${DOCKER_IMAGE}:${DOCKER_TAG}
-                        docker push $DOCKERHUB_USER/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
