@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "api-gateway"
         DOCKER_TAG = "latest"
+        DOCKERHUB_REPO = "wiwi2003/api-gateway"
     }
 
     stages {
@@ -25,6 +26,19 @@ pipeline {
             steps {
                 dir('integrated/api-gateway') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        // 🔴 AJOUT IMPORTANT
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh """
+                    docker login -u $USER -p $PASS
+                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKERHUB_REPO}:${DOCKER_TAG}
+                    docker push ${DOCKERHUB_REPO}:${DOCKER_TAG}
+                    """
                 }
             }
         }

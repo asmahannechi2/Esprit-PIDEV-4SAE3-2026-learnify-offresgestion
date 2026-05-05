@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "job-service"
         DOCKER_TAG = "latest"
+        DOCKERHUB_USER = "wiwi2003"
         SONAR_URL = "http://localhost:9000"
     }
 
@@ -27,7 +28,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN} -Dhttps.protocols=TLSv1.2"
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN}"
                     }
                 }
             }
@@ -37,7 +38,7 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     sh 'chmod +x mvnw'
-                    sh './mvnw clean package -DskipTests -Dhttps.protocols=TLSv1.2'
+                    sh './mvnw clean package -DskipTests'
                 }
             }
         }
@@ -46,6 +47,22 @@ pipeline {
             steps {
                 dir('integrated/job-service') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        docker login -u $DOCKER_USER -p $DOCKER_PASS
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} $DOCKERHUB_USER/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push $DOCKERHUB_USER/${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
                 }
             }
         }
