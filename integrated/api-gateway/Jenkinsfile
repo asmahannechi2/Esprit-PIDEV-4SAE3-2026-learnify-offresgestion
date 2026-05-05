@@ -16,7 +16,7 @@ pipeline {
         stage('Build Artifact') {
             steps {
                 dir('integrated/api-gateway') {
-                    sh 'mvn clean package -DskipTests'
+                    sh 'mvn clean package -DskipTests -Dhttps.protocols=TLSv1.2'
                 }
             }
         }

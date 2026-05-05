@@ -1,0 +1,10 @@
+target/
+*.jar
+.git/
+.idea/
+.settings/
+.classpath
+.project
+*.log
+Dockerfile
+Jenkinsfile
