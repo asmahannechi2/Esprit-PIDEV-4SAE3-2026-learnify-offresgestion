@@ -4,11 +4,12 @@ pipeline {
     environment {
         DOCKER_IMAGE = "frontend-service"
         DOCKER_TAG = "latest"
+        DOCKERHUB_REPO = "wiwi2003/frontend-service"
         SONAR_URL = "http://localhost:9000"
-        CHROME_BIN = "/usr/bin/google-chrome"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -23,11 +24,11 @@ pipeline {
             }
         }
 
-       stage('Unit Tests') {
-           steps {
-               echo "Skipping tests (no Chrome in Jenkins)"
-           }
-       }
+        stage('Unit Tests') {
+            steps {
+                echo "Skipping tests (no Chrome in Jenkins)"
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
@@ -51,6 +52,18 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh '''
+                    echo $PASS | docker login -u $USER --password-stdin
+                    docker tag frontend-service:latest wiwi2003/frontend-service:latest
+                    docker push wiwi2003/frontend-service:latest
+                    '''
                 }
             }
         }
