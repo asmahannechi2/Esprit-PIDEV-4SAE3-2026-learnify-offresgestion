@@ -22,7 +22,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             when {
-                expression { false } // Désactivé temporairement
+                expression { true } // Désactivé temporairement
             }
             steps {
                 dir('integrated/application-service') {
