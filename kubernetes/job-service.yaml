@@ -1,80 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-job
-  namespace: pidev
-  labels:
-    app: mysql-job
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql-job
-  template:
-    metadata:
-      labels:
-        app: mysql-job
-    spec:
-      containers:
-      - name: mysql
-        image: mysql:8.0
-        ports:
-        - containerPort: 3306
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-root-password
-        - name: MYSQL_DATABASE
-          value: jobdb
-        - name: MYSQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-user
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-password
-        volumeMounts:
-        - name: mysql-job-storage
-          mountPath: /var/lib/mysql
-      volumes:
-      - name: mysql-job-storage
-        persistentVolumeClaim:
-          claimName: mysql-job-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql-job
-  namespace: pidev
-spec:
-  ports:
-  - port: 3306
-    targetPort: 3306
-  selector:
-    app: mysql-job
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-job-pvc
-  namespace: pidev
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: job-service
-  namespace: pidev
+  namespace: default
   labels:
     app: job-service
 spec:
@@ -89,10 +17,10 @@ spec:
     spec:
       containers:
       - name: job-service
-        image: wiwi2003/job-service:latest
+        image: asmahannachi2/job-service:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8082
+        - containerPort: 8088
           name: http
         env:
         - name: SPRING_PROFILES_ACTIVE
@@ -100,27 +28,21 @@ spec:
         - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
           value: "http://eureka-server:8761/eureka/"
         - name: SPRING_DATASOURCE_URL
-          value: "jdbc:mysql://mysql-job:3306/jobdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
+          value: "jdbc:mysql://mysql-db:3306/learnify_jobs?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
         - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-user
+          value: "root"
         - name: SPRING_DATASOURCE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-password
+          value: "root"
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8082
+            port: 8088
           initialDelaySeconds: 120
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8082
+            port: 8088
           initialDelaySeconds: 90
           periodSeconds: 5
 ---
@@ -128,15 +50,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: job-service
-  namespace: pidev
+  namespace: default
   labels:
     app: job-service
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
-  - port: 8082
-    targetPort: 8082
-    nodePort: 30082
+  - port: 8088
+    targetPort: 8088
     protocol: TCP
     name: http
   selector:
