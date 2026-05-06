@@ -1,21 +1,17 @@
 pipeline {
     agent any
-
     environment {
         DOCKER_IMAGE = "job-service"
         DOCKER_TAG = "latest"
-        DOCKERHUB_USER = "wiwi2003"
+        DOCKERHUB_USER = "asmahannachi2"
         SONAR_URL = "http://localhost:9000"
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Unit Tests') {
             steps {
                 dir('integrated/job-service') {
@@ -24,10 +20,9 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube Analysis') {
             when {
-                expression { false } // Désactivé temporairement
+                expression { false }
             }
             steps {
                 dir('integrated/job-service') {
@@ -37,7 +32,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Artifact') {
             steps {
                 dir('integrated/job-service') {
@@ -46,7 +40,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 dir('integrated/job-service') {
@@ -54,7 +47,6 @@ pipeline {
                 }
             }
         }
-
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
@@ -70,18 +62,12 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Déployer Job Service avec MySQL
                     sh "kubectl apply -f kubernetes/job-service.yaml"
-                    
-                    // Attendre que le déploiement soit prêt
-                    sh "kubectl rollout status deployment/job-service -n pidev --timeout=5m"
-                    
-                    echo "✅ Job Service deployed to Kubernetes successfully"
-                    echo "🌐 Access Job Service at: http://NODE_IP:30082"
+                    sh "kubectl rollout status deployment/job-service --timeout=5m"
+                    echo "✅ Job Service deployed successfully"
                 }
             }
         }
