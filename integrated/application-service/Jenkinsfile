@@ -67,6 +67,7 @@ pipeline {
                 script {
                     sh 'kubectl apply -f kubernetes/backend.yaml --validate=false'
                     sh 'kubectl rollout restart deployment application-service'
+                    sh 'kubectl rollout status deployment/application-service --timeout=5m'
                     echo "✅ Application Service deployed successfully"
                 }
             }
