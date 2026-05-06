@@ -1,0 +1,206 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                  KUBERNETES DEPLOYMENT - LEARNHUB                     ║
+║                     Sprint 3 DevOps - PIDEV 4                        ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+📦 FICHIERS CRÉÉS
+═══════════════════════════════════════════════════════════════════════
+
+kubernetes/
+├── namespace.yaml                    # Namespace 'pidev'
+├── secrets.yaml                      # Secrets MySQL
+├── eureka-server.yaml                # Service Discovery
+├── api-gateway.yaml                  # API Gateway
+├── user-service.yaml                 # User Service + MySQL
+├── job-service.yaml                  # Job Service + MySQL
+├── frontend.yaml                     # Frontend Angular
+├── monitoring/
+│   ├── prometheus-config.yaml        # Config Prometheus
+│   ├── prometheus.yaml               # Déploiement Prometheus
+│   └── grafana.yaml                  # Déploiement Grafana
+├── deploy-all.sh                     # Script déploiement auto
+└── README.md                         # Documentation K8s
+
+Documentation/
+├── GUIDE_KUBERNETES.md               # Guide complet K8s
+└── ETAPES_MAINTENANT_KUBERNETES.md   # Étapes immédiates
+
+═══════════════════════════════════════════════════════════════════════
+🏗️  ARCHITECTURE KUBERNETES
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    Namespace: pidev                              │
+│                                                                  │
+│  Frontend (Angular)          → NodePort 30080                   │
+│      ↓                                                           │
+│  API Gateway                 → NodePort 30080                   │
+│      ↓                                                           │
+│  ┌─────────────┬─────────────┬─────────────┐                   │
+│  │             │             │             │                   │
+│  User Service  Job Service  Eureka Server                      │
+│  :30081        :30082        :30761                            │
+│  │             │                                                │
+│  MySQL User    MySQL Job                                       │
+│  (PVC 1Gi)     (PVC 1Gi)                                       │
+│                                                                  │
+│  Monitoring:                                                    │
+│  ├─ Prometheus  → NodePort 30090 (PVC 2Gi)                     │
+│  └─ Grafana     → NodePort 30300 (PVC 1Gi)                     │
+└─────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+🔄 PIPELINE CI/CD JENKINS → KUBERNETES
+═══════════════════════════════════════════════════════════════════════
+
+Developer → GitHub → Jenkins Pipeline:
+                     1. Checkout
+                     2. Tests
+                     3. Build (JAR/Angular)
+                     4. Docker Build
+                     5. Push to Docker Hub
+                     6. kubectl apply -f kubernetes/
+                     7. kubectl rollout status
+                     ↓
+                   Kubernetes Cluster:
+                     • Pull image
+                     • Rolling update
+                     • Health checks
+                     • Service discovery
+
+═══════════════════════════════════════════════════════════════════════
+📊 SERVICES DÉPLOYÉS
+═══════════════════════════════════════════════════════════════════════
+
+Service          Type        Port      NodePort   Image
+─────────────────────────────────────────────────────────────────────
+eureka-server    Deployment  8761      30761      wiwi2003/eureka-server
+api-gateway      Deployment  8080      30080      wiwi2003/api-gateway
+user-service     Deployment  8081      30081      wiwi2003/user-service
+job-service      Deployment  8082      30082      wiwi2003/job-service
+frontend         Deployment  80        30080      wiwi2003/frontend-service
+mysql-user       Deployment  3306      -          mysql:8.0
+mysql-job        Deployment  3306      -          mysql:8.0
+prometheus       Deployment  9090      30090      prom/prometheus
+grafana          Deployment  3000      30300      grafana/grafana
+
+═══════════════════════════════════════════════════════════════════════
+🚀 ÉTAPES DE DÉPLOIEMENT
+═══════════════════════════════════════════════════════════════════════
+
+1. INSTALLER K3S sur la VM Jenkins:
+   curl -sfL https://get.k3s.io | sh -
+   mkdir -p ~/.kube
+   sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+   sudo chown $USER:$USER ~/.kube/config
+
+2. CONFIGURER JENKINS:
+   sudo usermod -aG docker jenkins
+   sudo mkdir -p /var/lib/jenkins/.kube
+   sudo cp /etc/rancher/k3s/k3s.yaml /var/lib/jenkins/.kube/config
+   sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
+   sudo systemctl restart jenkins
+
+3. PUSH LE CODE:
+   git add .
+   git commit -m "feat: Kubernetes deployment with monitoring"
+   git push origin main
+
+4. LANCER LES BUILDS JENKINS (dans cet ordre):
+   a) eureka-server    → Build Now → Attendre SUCCESS
+   b) api-gateway      → Build Now → Attendre SUCCESS
+   c) user-service     → Build Now → Attendre SUCCESS
+   d) job-service      → Build Now → Attendre SUCCESS
+   e) frontend         → Build Now → Attendre SUCCESS
+
+5. DÉPLOYER LE MONITORING:
+   kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
+   kubectl apply -f kubernetes/monitoring/prometheus.yaml
+   kubectl apply -f kubernetes/monitoring/grafana.yaml
+
+6. VÉRIFIER:
+   kubectl get pods -n pidev
+   kubectl get services -n pidev
+
+═══════════════════════════════════════════════════════════════════════
+🌐 URLS D'ACCÈS
+═══════════════════════════════════════════════════════════════════════
+
+Obtenir l'IP du node:
+  NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+
+URLs:
+  • Frontend:        http://NODE_IP:30080
+  • API Gateway:     http://NODE_IP:30080
+  • Eureka Server:   http://NODE_IP:30761
+  • User Service:    http://NODE_IP:30081/actuator/health
+  • Job Service:     http://NODE_IP:30082/actuator/health
+  • Prometheus:      http://NODE_IP:30090
+  • Grafana:         http://NODE_IP:30300 (admin/admin123)
+
+═══════════════════════════════════════════════════════════════════════
+✅ CHECKLIST DE SUCCÈS
+═══════════════════════════════════════════════════════════════════════
+
+[ ] K3s installé (kubectl get nodes fonctionne)
+[ ] Jenkins configuré pour kubectl
+[ ] Code pushé sur GitHub
+[ ] 5 builds Jenkins SUCCESS
+[ ] Tous les pods Running (kubectl get pods -n pidev)
+[ ] Eureka Dashboard accessible
+[ ] 3 services enregistrés dans Eureka
+[ ] Frontend accessible
+[ ] Prometheus collecte les métriques
+[ ] Grafana accessible avec dashboards
+
+═══════════════════════════════════════════════════════════════════════
+🔧 COMMANDES UTILES
+═══════════════════════════════════════════════════════════════════════
+
+# Voir tout
+kubectl get all -n pidev
+
+# Logs d'un service
+kubectl logs -f deployment/user-service -n pidev
+
+# Redémarrer un service
+kubectl rollout restart deployment/user-service -n pidev
+
+# Scaler un service
+kubectl scale deployment/user-service --replicas=3 -n pidev
+
+# Supprimer tout
+kubectl delete namespace pidev
+
+# Redéployer
+./kubernetes/deploy-all.sh
+
+═══════════════════════════════════════════════════════════════════════
+📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════
+
+• GUIDE_KUBERNETES.md                 → Guide complet
+• ETAPES_MAINTENANT_KUBERNETES.md     → Étapes immédiates
+• kubernetes/README.md                → Documentation K8s
+• ARCHITECTURE.md                     → Architecture système
+
+═══════════════════════════════════════════════════════════════════════
+🎯 RÉSULTAT FINAL
+═══════════════════════════════════════════════════════════════════════
+
+✅ Pipeline CI/CD complet (Jenkins → Docker Hub → Kubernetes)
+✅ Déploiement automatisé sur Kubernetes
+✅ Monitoring avec Prometheus + Grafana
+✅ Service Discovery avec Eureka
+✅ Load Balancing automatique
+✅ Rolling updates sans downtime
+✅ Health checks (liveness/readiness)
+✅ Persistent storage pour MySQL
+✅ Secrets management
+✅ Namespace isolation
+
+═══════════════════════════════════════════════════════════════════════
+
+🎉 VOTRE PROJET DEVOPS SPRINT 3 EST COMPLET ! 🎉
+
+═══════════════════════════════════════════════════════════════════════

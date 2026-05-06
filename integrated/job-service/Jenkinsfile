@@ -71,13 +71,18 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            when {
-                expression { false } // Désactivé - on déploiera manuellement avec Docker
-            }
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f kubernetes/backend.yaml --validate=false'
-                sh 'kubectl rollout restart deployment job-service'
+                script {
+                    // Déployer Job Service avec MySQL
+                    sh "kubectl apply -f kubernetes/job-service.yaml"
+                    
+                    // Attendre que le déploiement soit prêt
+                    sh "kubectl rollout status deployment/job-service -n pidev --timeout=5m"
+                    
+                    echo "✅ Job Service deployed to Kubernetes successfully"
+                    echo "🌐 Access Job Service at: http://NODE_IP:30082"
+                }
             }
         }
     }

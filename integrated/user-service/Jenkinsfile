@@ -66,13 +66,18 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            when {
-                expression { false } // Désactivé - on déploiera manuellement avec Docker
-            }
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f kubernetes/user.yaml --validate=false'
-                sh 'kubectl rollout restart deployment user-service'
+                script {
+                    // Déployer User Service avec MySQL
+                    sh "kubectl apply -f kubernetes/user-service.yaml"
+                    
+                    // Attendre que le déploiement soit prêt
+                    sh "kubectl rollout status deployment/user-service -n pidev --timeout=5m"
+                    
+                    echo "✅ User Service deployed to Kubernetes successfully"
+                    echo "🌐 Access User Service at: http://NODE_IP:30081"
+                }
             }
         }
     }

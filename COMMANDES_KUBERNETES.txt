@@ -1,0 +1,369 @@
+# ═══════════════════════════════════════════════════════════════════════
+# COMMANDES KUBERNETES - LEARNHUB DEVOPS
+# ═══════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────
+# 1. INSTALLATION K3S (sur la VM Jenkins)
+# ───────────────────────────────────────────────────────────────────────
+
+# Se connecter à la VM
+ssh vagrant@votre-vm-ip
+
+# Installer K3s
+curl -sfL https://get.k3s.io | sh -
+
+# Configurer kubectl
+mkdir -p ~/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo chown $USER:$USER ~/.kube/config
+export KUBECONFIG=~/.kube/config
+echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
+
+# Vérifier l'installation
+kubectl get nodes
+kubectl version
+
+# ───────────────────────────────────────────────────────────────────────
+# 2. CONFIGURATION JENKINS
+# ───────────────────────────────────────────────────────────────────────
+
+# Donner les permissions Docker à Jenkins
+sudo usermod -aG docker jenkins
+
+# Configurer kubectl pour Jenkins
+sudo mkdir -p /var/lib/jenkins/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml /var/lib/jenkins/.kube/config
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
+
+# Redémarrer Jenkins
+sudo systemctl restart jenkins
+
+# Vérifier
+sudo -u jenkins kubectl get nodes
+
+# ───────────────────────────────────────────────────────────────────────
+# 3. CLONER LE PROJET
+# ───────────────────────────────────────────────────────────────────────
+
+cd ~
+git clone https://github.com/asmahannechi2/Esprit-PIDEV-4SAE3-2026-learnify-offresgestion.git
+cd Esprit-PIDEV-4SAE3-2026-learnify-offresgestion
+
+# ───────────────────────────────────────────────────────────────────────
+# 4. DÉPLOIEMENT AUTOMATIQUE
+# ───────────────────────────────────────────────────────────────────────
+
+# Rendre le script exécutable
+chmod +x kubernetes/deploy-all.sh
+
+# Lancer le déploiement complet
+./kubernetes/deploy-all.sh
+
+# ───────────────────────────────────────────────────────────────────────
+# 5. DÉPLOIEMENT MANUEL (si vous préférez)
+# ───────────────────────────────────────────────────────────────────────
+
+# Créer le namespace
+kubectl apply -f kubernetes/namespace.yaml
+
+# Créer les secrets
+kubectl apply -f kubernetes/secrets.yaml
+
+# Déployer Eureka Server
+kubectl apply -f kubernetes/eureka-server.yaml
+sleep 60
+
+# Déployer API Gateway
+kubectl apply -f kubernetes/api-gateway.yaml
+sleep 30
+
+# Déployer User Service
+kubectl apply -f kubernetes/user-service.yaml
+sleep 30
+
+# Déployer Job Service
+kubectl apply -f kubernetes/job-service.yaml
+sleep 30
+
+# Déployer Frontend
+kubectl apply -f kubernetes/frontend.yaml
+sleep 20
+
+# Déployer Prometheus
+kubectl apply -f kubernetes/monitoring/prometheus-config.yaml
+kubectl apply -f kubernetes/monitoring/prometheus.yaml
+sleep 20
+
+# Déployer Grafana
+kubectl apply -f kubernetes/monitoring/grafana.yaml
+
+# ───────────────────────────────────────────────────────────────────────
+# 6. VÉRIFICATION DU DÉPLOIEMENT
+# ───────────────────────────────────────────────────────────────────────
+
+# Voir tous les pods
+kubectl get pods -n pidev
+
+# Voir tous les services
+kubectl get services -n pidev
+
+# Voir tous les déploiements
+kubectl get deployments -n pidev
+
+# Voir les PVC
+kubectl get pvc -n pidev
+
+# Voir tout
+kubectl get all -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 7. OBTENIR LES URLS D'ACCÈS
+# ───────────────────────────────────────────────────────────────────────
+
+# Obtenir l'IP du node
+NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+echo "Node IP: ${NODE_IP}"
+
+# Afficher les URLs
+echo "Frontend:      http://${NODE_IP}:30080"
+echo "API Gateway:   http://${NODE_IP}:30080"
+echo "Eureka:        http://${NODE_IP}:30761"
+echo "User Service:  http://${NODE_IP}:30081"
+echo "Job Service:   http://${NODE_IP}:30082"
+echo "Prometheus:    http://${NODE_IP}:30090"
+echo "Grafana:       http://${NODE_IP}:30300"
+
+# ───────────────────────────────────────────────────────────────────────
+# 8. TESTER LES SERVICES
+# ───────────────────────────────────────────────────────────────────────
+
+# Health checks
+curl http://${NODE_IP}:30761/actuator/health
+curl http://${NODE_IP}:30080/actuator/health
+curl http://${NODE_IP}:30081/actuator/health
+curl http://${NODE_IP}:30082/actuator/health
+
+# Frontend
+curl http://${NODE_IP}:30080
+
+# ───────────────────────────────────────────────────────────────────────
+# 9. VOIR LES LOGS
+# ───────────────────────────────────────────────────────────────────────
+
+# Logs d'un pod spécifique
+kubectl logs <pod-name> -n pidev
+
+# Logs en temps réel
+kubectl logs -f <pod-name> -n pidev
+
+# Logs d'un déploiement
+kubectl logs -f deployment/user-service -n pidev
+
+# Dernières 100 lignes
+kubectl logs --tail=100 <pod-name> -n pidev
+
+# Logs de tous les conteneurs d'un pod
+kubectl logs <pod-name> -n pidev --all-containers=true
+
+# ───────────────────────────────────────────────────────────────────────
+# 10. DEBUGGING
+# ───────────────────────────────────────────────────────────────────────
+
+# Décrire un pod (voir les événements)
+kubectl describe pod <pod-name> -n pidev
+
+# Décrire un service
+kubectl describe service user-service -n pidev
+
+# Voir les événements du namespace
+kubectl get events -n pidev --sort-by='.lastTimestamp'
+
+# Accéder à un pod
+kubectl exec -it <pod-name> -n pidev -- /bin/bash
+
+# Port-forward pour debug local
+kubectl port-forward svc/eureka-server 8761:8761 -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 11. GESTION DES DÉPLOIEMENTS
+# ───────────────────────────────────────────────────────────────────────
+
+# Redémarrer un déploiement (rolling restart)
+kubectl rollout restart deployment/user-service -n pidev
+
+# Voir le statut d'un rollout
+kubectl rollout status deployment/user-service -n pidev
+
+# Voir l'historique des rollouts
+kubectl rollout history deployment/user-service -n pidev
+
+# Rollback au déploiement précédent
+kubectl rollout undo deployment/user-service -n pidev
+
+# Scaler un déploiement
+kubectl scale deployment/user-service --replicas=3 -n pidev
+
+# Mettre à jour l'image
+kubectl set image deployment/user-service user-service=wiwi2003/user-service:latest -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 12. MONITORING
+# ───────────────────────────────────────────────────────────────────────
+
+# Voir l'utilisation des ressources
+kubectl top nodes
+kubectl top pods -n pidev
+
+# Voir les métriques d'un pod
+kubectl top pod <pod-name> -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 13. GESTION DES SECRETS
+# ───────────────────────────────────────────────────────────────────────
+
+# Voir les secrets
+kubectl get secrets -n pidev
+
+# Voir le contenu d'un secret (base64 encodé)
+kubectl get secret mysql-secret -n pidev -o yaml
+
+# Décoder un secret
+kubectl get secret mysql-secret -n pidev -o jsonpath='{.data.mysql-password}' | base64 -d
+
+# Créer un secret
+kubectl create secret generic my-secret --from-literal=password=mypassword -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 14. GESTION DES CONFIGMAPS
+# ───────────────────────────────────────────────────────────────────────
+
+# Voir les ConfigMaps
+kubectl get configmaps -n pidev
+
+# Voir le contenu d'un ConfigMap
+kubectl get configmap prometheus-config -n pidev -o yaml
+
+# Éditer un ConfigMap
+kubectl edit configmap prometheus-config -n pidev
+
+# ───────────────────────────────────────────────────────────────────────
+# 15. NETTOYAGE
+# ───────────────────────────────────────────────────────────────────────
+
+# Supprimer un déploiement spécifique
+kubectl delete -f kubernetes/user-service.yaml
+
+# Supprimer tout le namespace (ATTENTION: supprime tout!)
+kubectl delete namespace pidev
+
+# Supprimer tous les pods d'un déploiement
+kubectl delete pods -l app=user-service -n pidev
+
+# Forcer la suppression d'un pod bloqué
+kubectl delete pod <pod-name> -n pidev --force --grace-period=0
+
+# ───────────────────────────────────────────────────────────────────────
+# 16. FIREWALL (si les services ne sont pas accessibles)
+# ───────────────────────────────────────────────────────────────────────
+
+# Ouvrir les ports NodePort
+sudo ufw allow 30080/tcp  # Frontend + API Gateway
+sudo ufw allow 30761/tcp  # Eureka
+sudo ufw allow 30081/tcp  # User Service
+sudo ufw allow 30082/tcp  # Job Service
+sudo ufw allow 30090/tcp  # Prometheus
+sudo ufw allow 30300/tcp  # Grafana
+
+# Vérifier le firewall
+sudo ufw status
+
+# ───────────────────────────────────────────────────────────────────────
+# 17. JENKINS - LANCER LES BUILDS
+# ───────────────────────────────────────────────────────────────────────
+
+# Ouvrir Jenkins dans le navigateur
+# http://VM_IP:8080
+
+# Ordre des builds:
+# 1. eureka-server    → Build Now → Attendre SUCCESS
+# 2. api-gateway      → Build Now → Attendre SUCCESS
+# 3. user-service     → Build Now → Attendre SUCCESS
+# 4. job-service      → Build Now → Attendre SUCCESS
+# 5. frontend         → Build Now → Attendre SUCCESS
+
+# ───────────────────────────────────────────────────────────────────────
+# 18. VÉRIFICATION FINALE
+# ───────────────────────────────────────────────────────────────────────
+
+# Checklist complète
+kubectl get nodes                           # Node doit être Ready
+kubectl get pods -n pidev                   # Tous les pods Running
+kubectl get services -n pidev               # Tous les services créés
+kubectl get pvc -n pidev                    # PVC Bound
+
+# Vérifier Eureka Dashboard
+# http://NODE_IP:30761
+# Doit afficher: API-GATEWAY, USER-SERVICE, JOB-SERVICE
+
+# Vérifier Prometheus
+# http://NODE_IP:30090
+# Status → Targets → Tous UP
+
+# Vérifier Grafana
+# http://NODE_IP:30300
+# Login: admin / admin123
+
+# Vérifier l'application
+# http://NODE_IP:30080
+
+# ───────────────────────────────────────────────────────────────────────
+# 19. COMMANDES UTILES
+# ───────────────────────────────────────────────────────────────────────
+
+# Voir la configuration kubectl
+kubectl config view
+
+# Changer de namespace par défaut
+kubectl config set-context --current --namespace=pidev
+
+# Voir les ressources avec labels
+kubectl get pods -n pidev --show-labels
+
+# Filtrer par label
+kubectl get pods -l app=user-service -n pidev
+
+# Exporter un manifest
+kubectl get deployment user-service -n pidev -o yaml > user-service-backup.yaml
+
+# Appliquer plusieurs fichiers
+kubectl apply -f kubernetes/
+
+# Dry-run (tester sans appliquer)
+kubectl apply -f kubernetes/user-service.yaml --dry-run=client
+
+# ───────────────────────────────────────────────────────────────────────
+# 20. TROUBLESHOOTING COURANT
+# ───────────────────────────────────────────────────────────────────────
+
+# Pod en CrashLoopBackOff
+kubectl logs <pod-name> -n pidev
+kubectl describe pod <pod-name> -n pidev
+
+# Service non accessible
+kubectl get endpoints -n pidev
+kubectl describe service <service-name> -n pidev
+
+# Image non trouvée
+# Vérifier Docker Hub: https://hub.docker.com/u/wiwi2003
+
+# Problème de permissions
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.kube
+sudo systemctl restart jenkins
+
+# K3s ne démarre pas
+sudo systemctl status k3s
+sudo journalctl -u k3s -f
+
+# ═══════════════════════════════════════════════════════════════════════
+# FIN DES COMMANDES
+# ═══════════════════════════════════════════════════════════════════════

@@ -43,10 +43,18 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f kubernetes/gateway.yaml --validate=false'
-                sh 'kubectl rollout restart deployment api-gateway'
+                script {
+                    // Déployer API Gateway
+                    sh "kubectl apply -f kubernetes/api-gateway.yaml"
+                    
+                    // Attendre que le déploiement soit prêt
+                    sh "kubectl rollout status deployment/api-gateway -n pidev --timeout=5m"
+                    
+                    echo "✅ API Gateway deployed to Kubernetes successfully"
+                    echo "🌐 Access API Gateway at: http://NODE_IP:30080"
+                }
             }
         }
     }
