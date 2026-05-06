@@ -115,14 +115,14 @@ spec:
           httpGet:
             path: /actuator/health
             port: 8087
-          initialDelaySeconds: 180
+          initialDelaySeconds: 240
           periodSeconds: 10
           failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /actuator/health
             port: 8087
-          initialDelaySeconds: 150
+          initialDelaySeconds: 210
           periodSeconds: 10
           failureThreshold: 3
 ---
