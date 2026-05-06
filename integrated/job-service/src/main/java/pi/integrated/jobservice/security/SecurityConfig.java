@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -29,23 +30,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
-                // Démo Feign sync (job → preevaluation) + doc
+                .requestMatchers("/actuator/prometheus").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/jobs/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                // Public: browse jobs (incl. /api/jobs sans segment — Ant /** ne couvre pas toujours la racine)
                 .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/job-notifications/**").authenticated()
-                // Saved jobs — any authenticated user
                 .requestMatchers("/api/saved-jobs/**").authenticated()
-                // CV profile — TUTOR, CANDIDATE or ADMIN
                 .requestMatchers("/api/cv-profiles/**", "/api/cv-profile/**").authenticated()
-                // Applications — TUTOR or CANDIDATE applies, ADMIN manages
                 .requestMatchers(HttpMethod.POST, "/api/applications/**").hasAnyRole("TUTOR", "CANDIDATE")
-                // PUT/PATCH : seuls statut + futurs endpoints ; contrôle ADMIN.
                 .requestMatchers(HttpMethod.PUT, "/api/applications/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/applications/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/applications/**").authenticated()
-                // Meetings — lecture « perso » / par application : tout utilisateur connecté ; liste admin : ADMIN uniquement
                 .requestMatchers(HttpMethod.GET, "/api/meetings/room/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/meetings/application/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/meetings/my", "/api/meetings/next").authenticated()
@@ -53,10 +48,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/meetings/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/meetings/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/meetings/**").authenticated()
-                // Ratings — STUDENT rates; admins/tutors read
                 .requestMatchers(HttpMethod.POST, "/api/ratings/**").hasRole("STUDENT")
                 .requestMatchers(HttpMethod.GET, "/api/ratings/**").authenticated()
-                // Admin job management
                 .requestMatchers(HttpMethod.POST, "/api/jobs/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/jobs/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/jobs/**").hasRole("ADMIN")
