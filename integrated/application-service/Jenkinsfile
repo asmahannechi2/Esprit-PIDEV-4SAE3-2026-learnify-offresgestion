@@ -1,20 +1,17 @@
 pipeline {
     agent any
-
     environment {
         DOCKER_IMAGE = "application-service"
         DOCKER_TAG = "latest"
-        // Remplacez par votre URL SonarQube si différent de localhost
+        DOCKERHUB_USER = "asmahannachi2"
         SONAR_URL = "http://localhost:9000"
     }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Unit Tests') {
             steps {
                 dir('integrated/application-service') {
@@ -23,17 +20,15 @@ pipeline {
                 }
             }
         }
-
         stage('SonarQube Analysis') {
             steps {
                 dir('integrated/application-service') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_TOKEN} -Dhttps.protocols=TLSv1.2"
+                        sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.token=${SONAR_TOKEN} -Dhttps.protocols=TLSv1.2"
                     }
                 }
             }
         }
-
         stage('Build Artifact') {
             steps {
                 dir('integrated/application-service') {
@@ -42,7 +37,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 dir('integrated/application-service') {
@@ -50,11 +44,28 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy') {
+        stage('Push Docker Image') {
             steps {
-                sh 'kubectl apply -f kubernetes/backend.yaml --validate=false'
-                sh 'kubectl rollout restart deployment application-service'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh 'kubectl apply -f kubernetes/backend.yaml --validate=false'
+                    sh 'kubectl rollout restart deployment application-service'
+                    echo "✅ Application Service deployed successfully"
+                }
             }
         }
     }
