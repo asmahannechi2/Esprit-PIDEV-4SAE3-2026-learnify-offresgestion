@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "api-gateway"
         DOCKER_TAG = "latest"
-        DOCKERHUB_USER = "asmahannachi2"
+        DOCKERHUB_USER = "wiwi2003"
         SONAR_URL = "http://localhost:9000"
     }
     stages {
