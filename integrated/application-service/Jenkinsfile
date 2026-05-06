@@ -3,7 +3,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "application-service"
         DOCKER_TAG = "latest"
-        DOCKERHUB_USER = "wiwi2003"
+        DOCKERHUB_USER = "asmahannachi2"
         SONAR_URL = "http://localhost:9000"
     }
     stages {
