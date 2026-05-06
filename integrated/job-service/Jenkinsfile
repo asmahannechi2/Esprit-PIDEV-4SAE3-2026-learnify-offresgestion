@@ -22,7 +22,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             when {
-                expression { false }
+                expression { true }
             }
             steps {
                 dir('integrated/job-service') {
