@@ -1,19 +1,17 @@
 pipeline {
     agent any
-
     environment {
         DOCKER_IMAGE = "api-gateway"
         DOCKER_TAG = "latest"
-        DOCKERHUB_REPO = "wiwi2003/api-gateway"
+        DOCKERHUB_USER = "asmahannachi2"
+        SONAR_URL = "http://localhost:9000"
     }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Build Artifact') {
             steps {
                 dir('integrated/api-gateway') {
@@ -21,7 +19,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 dir('integrated/api-gateway') {
@@ -29,31 +26,28 @@ pipeline {
                 }
             }
         }
-
-        // 🔴 AJOUT IMPORTANT
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh """
-                    docker login -u $USER -p $PASS
-                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKERHUB_REPO}:${DOCKER_TAG}
-                    docker push ${DOCKERHUB_REPO}:${DOCKER_TAG}
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker push ${DOCKERHUB_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 }
             }
         }
-
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Déployer API Gateway
-                    sh "kubectl apply -f kubernetes/api-gateway.yaml"
-                    
-                    // Attendre que le déploiement soit prêt
-                    sh "kubectl rollout status deployment/api-gateway -n pidev --timeout=5m"
-                    
-                    echo "✅ API Gateway deployed to Kubernetes successfully"
-                    echo "🌐 Access API Gateway at: http://NODE_IP:30080"
+                    sh "kubectl apply -f kubernetes/api-gateway.yaml --validate=false"
+                    sh "kubectl rollout restart deployment/api-gateway"
+                    sh "kubectl rollout status deployment/api-gateway --timeout=5m"
+                    echo "✅ API Gateway deployed successfully"
                 }
             }
         }
