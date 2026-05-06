@@ -20,7 +20,7 @@ spec:
         image: wiwi2003/api-gateway:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8060
           name: http
         env:
         - name: SPRING_PROFILES_ACTIVE
@@ -30,13 +30,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8060
           initialDelaySeconds: 90
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8060
           initialDelaySeconds: 60
           periodSeconds: 5
 ---
@@ -50,8 +50,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 8060
+    targetPort: 8060
     nodePort: 30080
     protocol: TCP
     name: http
