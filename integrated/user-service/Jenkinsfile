@@ -63,7 +63,7 @@ pipeline {
             steps {
                 script {
                     sh "kubectl apply -f kubernetes/user-service.yaml"
-                    sh "kubectl rollout status deployment/user-service -n pidev --timeout=5m"
+                    sh "kubectl rollout status deployment/user-service --timeout=5m"
                     echo "✅ User Service deployed successfully"
                 }
             }
