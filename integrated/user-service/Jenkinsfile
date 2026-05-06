@@ -67,6 +67,9 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                expression { false } // Désactivé - on déploiera manuellement avec Docker
+            }
             steps {
                 sh 'kubectl apply -f kubernetes/user.yaml --validate=false'
                 sh 'kubectl rollout restart deployment user-service'

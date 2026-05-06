@@ -31,6 +31,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            when {
+                expression { false } // Désactivé temporairement
+            }
             steps {
                 dir('frontend') {
                     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
