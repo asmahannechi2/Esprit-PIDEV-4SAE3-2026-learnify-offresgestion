@@ -98,7 +98,8 @@ echo "Node IP: ${NODE_IP}"
 
 Ouvrir dans le navigateur:
 
-- **Frontend**: http://NODE_IP:30080
+- **Frontend**: http://NODE_IP:30088
+- **API Gateway**: http://NODE_IP:30080
 - **Eureka**: http://NODE_IP:30761
 - **Prometheus**: http://NODE_IP:30090
 - **Grafana**: http://NODE_IP:30300 (admin/admin123)
@@ -184,6 +185,7 @@ kubectl rollout restart deployment/<service-name> -n pidev
 
 ```bash
 # Ouvrir les ports du firewall
+sudo ufw allow 30088/tcp
 sudo ufw allow 30080/tcp
 sudo ufw allow 30761/tcp
 sudo ufw allow 30081/tcp
