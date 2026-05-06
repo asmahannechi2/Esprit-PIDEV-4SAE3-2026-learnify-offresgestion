@@ -1,0 +1,205 @@
+═══════════════════════════════════════════════════════════════════
+  📋 COMMANDES À EXÉCUTER - LearnHub DevOps
+═══════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 1️⃣  SUR VOTRE MACHINE WINDOWS (Git Bash ou PowerShell)         │
+└─────────────────────────────────────────────────────────────────┘
+
+# Ajouter tous les fichiers
+git add .
+
+# Commit
+git commit -m "fix: disable SonarQube stage and add deployment automation scripts"
+
+# Push vers GitHub
+git push origin main
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 2️⃣  SUR VOTRE VM JENKINS (Terminal SSH)                        │
+└─────────────────────────────────────────────────────────────────┘
+
+# Se connecter à la VM (remplacez par votre IP)
+ssh vagrant@192.168.56.10
+
+# Aller dans le répertoire du workspace Jenkins
+cd /var/lib/jenkins/workspace/user-service
+
+# Pull les dernières modifications
+git pull origin main
+
+# Rendre le script setup exécutable
+chmod +x setup.sh
+
+# Exécuter le setup
+./setup.sh
+
+# Vérifier l'état actuel du système
+./check-system.sh
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 3️⃣  DANS JENKINS (Interface Web)                               │
+└─────────────────────────────────────────────────────────────────┘
+
+Ouvrir dans le navigateur : http://192.168.56.10:8080
+
+Relancer les builds dans cet ordre :
+
+1. Job "eureka-server" → Cliquer sur "Build Now"
+   ⏳ Attendre que le build soit SUCCESS
+
+2. Job "api-gateway" → Cliquer sur "Build Now"
+   ⏳ Attendre que le build soit SUCCESS
+
+3. Job "user-service" → Cliquer sur "Build Now"
+   ⏳ Attendre que le build soit SUCCESS
+
+4. Job "job-service" → Cliquer sur "Build Now"
+   ⏳ Attendre que le build soit SUCCESS
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 4️⃣  VÉRIFIER LES IMAGES DOCKER (VM Jenkins)                    │
+└─────────────────────────────────────────────────────────────────┘
+
+# Vérifier que les images ont été créées
+docker images | grep -E "eureka|gateway|user-service|job-service"
+
+# Vous devriez voir 4 images avec le tag "latest"
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 5️⃣  DÉPLOYER TOUS LES SERVICES (VM Jenkins)                    │
+└─────────────────────────────────────────────────────────────────┘
+
+# Déployer automatiquement tous les services
+./deploy-all.sh
+
+# Attendre 2-3 minutes que tout démarre
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 6️⃣  VÉRIFIER QUE TOUT FONCTIONNE (VM Jenkins)                  │
+└─────────────────────────────────────────────────────────────────┘
+
+# Vérifier l'état du système
+./check-system.sh
+
+# Vérifier les conteneurs en cours d'exécution
+docker ps
+
+# Vous devriez voir 4-5 conteneurs "Up"
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 7️⃣  TESTER L'APPLICATION (Navigateur)                          │
+└─────────────────────────────────────────────────────────────────┘
+
+Ouvrir ces URLs dans votre navigateur :
+
+✅ Eureka Dashboard : http://192.168.56.10:8761
+   → Vous devriez voir API-GATEWAY, USER-SERVICE, JOB-SERVICE
+
+✅ API Gateway Health : http://192.168.56.10:8080/actuator/health
+   → Vous devriez voir {"status":"UP"}
+
+✅ Frontend : http://192.168.56.10
+   → L'application Angular devrait s'afficher
+
+
+═══════════════════════════════════════════════════════════════════
+  🐛 EN CAS DE PROBLÈME
+═══════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Voir les logs d'un service                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+docker logs eureka-server
+docker logs api-gateway
+docker logs user-service
+docker logs job-service
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Redémarrer un service                                           │
+└─────────────────────────────────────────────────────────────────┘
+
+docker restart eureka-server
+docker restart api-gateway
+docker restart user-service
+docker restart job-service
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Arrêter tous les services                                       │
+└─────────────────────────────────────────────────────────────────┘
+
+docker stop eureka-server api-gateway user-service job-service
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Redémarrer tous les services                                    │
+└─────────────────────────────────────────────────────────────────┘
+
+./deploy-all.sh
+
+
+┌─────────────────────────────────────────────────────────────────┐
+│ Nettoyer complètement et recommencer                            │
+└─────────────────────────────────────────────────────────────────┘
+
+# Arrêter et supprimer tous les conteneurs
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+
+# Supprimer les images (optionnel)
+docker rmi eureka-server:latest api-gateway:latest user-service:latest job-service:latest
+
+# Relancer les builds Jenkins
+# Puis redéployer
+./deploy-all.sh
+
+
+═══════════════════════════════════════════════════════════════════
+  📊 VÉRIFICATIONS FINALES
+═══════════════════════════════════════════════════════════════════
+
+Cochez chaque élément :
+
+[ ] Git push effectué avec succès
+[ ] Tous les builds Jenkins sont SUCCESS
+[ ] 4 images Docker créées (eureka, gateway, user, job)
+[ ] Script deploy-all.sh exécuté sans erreur
+[ ] 4-5 conteneurs en état "Up" (docker ps)
+[ ] Eureka Dashboard accessible (http://192.168.56.10:8761)
+[ ] 3 services enregistrés dans Eureka
+[ ] API Gateway répond (http://192.168.56.10:8080/actuator/health)
+[ ] Frontend accessible (http://192.168.56.10)
+[ ] Navigation dans l'application fonctionne
+
+
+═══════════════════════════════════════════════════════════════════
+  🎯 RÉSUMÉ RAPIDE
+═══════════════════════════════════════════════════════════════════
+
+1. Sur Windows : git add . && git commit -m "fix" && git push
+2. Sur VM : git pull && chmod +x setup.sh && ./setup.sh
+3. Dans Jenkins : Build Now sur les 4 jobs
+4. Sur VM : ./deploy-all.sh
+5. Vérifier : ./check-system.sh
+6. Tester : http://192.168.56.10:8761 et http://192.168.56.10
+
+
+═══════════════════════════════════════════════════════════════════
+  ✅ C'EST TOUT !
+═══════════════════════════════════════════════════════════════════
+
+Si vous suivez ces étapes, votre application sera en ligne ! 🚀
+
+Pour plus de détails, consultez :
+- RESUME_SOLUTION.md
+- README_DEVOPS.md
+- GUIDE_DEPLOIEMENT.md
